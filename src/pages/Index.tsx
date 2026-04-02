@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import HeroCarousel from "@/components/HeroCarousel";
-import { Store, Wallet, BookOpen, ShoppingBag, Calendar, MapPin, Tag, Loader2, RefreshCw } from "lucide-react";
+import { Store, Wallet, BookOpen, ShoppingBag, Calendar, MapPin, Tag, Loader2, RefreshCw, Globe, Radio, Clock, Languages, ExternalLink, ChevronDown, ChevronUp, Video, Users } from "lucide-react";
 
 interface MerchantUnit {
   name: string;
@@ -88,16 +88,241 @@ function fetchMerchantsFromRelays(timeout = 15000): Promise<MerchantUnit[]> {
   });
 }
 
+// ── LanaEvent types ──
+
+interface ScheduleEntry {
+  start: Date;
+  end?: Date;
+}
+
+interface LanaEvent {
+  id: string;
+  pubkey: string;
+  created_at: number;
+  title: string;
+  content: string;
+  status: string;
+  start: Date;
+  end?: Date;
+  language: string;
+  eventType: string;
+  organizerPubkey: string;
+  isOnline: boolean;
+  onlineUrl?: string;
+  youtubeUrl?: string;
+  youtubeRecordingUrl?: string;
+  location?: string;
+  lat?: number;
+  lon?: number;
+  capacity?: number;
+  cover?: string;
+  fiatValue?: number;
+  guests: string[];
+  attachments: string[];
+  category?: string;
+  dTag: string;
+  timezone?: string;
+  schedule: ScheduleEntry[];
+}
+
+function parseLanaEvent(event: any): LanaEvent | null {
+  try {
+    const tags = event.tags || [];
+    const get = (n: string): string | undefined => tags.find((t: string[]) => t[0] === n)?.[1];
+    const getAll = (n: string): string[] => tags.filter((t: string[]) => t[0] === n).map((t: string[]) => t[1]);
+
+    const title = get('title');
+    const status = get('status');
+    const startStr = get('start');
+    const dTag = get('d');
+    const language = get('language');
+    const eventType = get('event_type');
+    const organizerPubkey = get('p');
+
+    if (!title || !status || !startStr || !dTag || !language || !eventType || !organizerPubkey) return null;
+
+    const start = new Date(startStr);
+    if (isNaN(start.getTime())) return null;
+
+    const endStr = get('end');
+    const end = endStr ? new Date(endStr) : undefined;
+    const onlineUrl = get('online');
+
+    const latStr = get('lat');
+    const lonStr = get('lon');
+    const capacityStr = get('capacity');
+    const fiatValueStr = get('fiat_value');
+
+    const scheduleTags = tags.filter((t: string[]) => t[0] === 'schedule');
+    const schedule: ScheduleEntry[] = scheduleTags
+      .map((t: string[]) => {
+        const s = new Date(t[1]);
+        if (isNaN(s.getTime())) return null;
+        const e = t[2] ? new Date(t[2]) : undefined;
+        return { start: s, end: e && !isNaN(e.getTime()) ? e : undefined };
+      })
+      .filter((entry: ScheduleEntry | null): entry is ScheduleEntry => entry !== null)
+      .sort((a: ScheduleEntry, b: ScheduleEntry) => a.start.getTime() - b.start.getTime());
+
+    return {
+      id: event.id,
+      pubkey: event.pubkey,
+      created_at: event.created_at,
+      title,
+      content: event.content || '',
+      status,
+      start,
+      end: end && !isNaN(end.getTime()) ? end : undefined,
+      language,
+      eventType,
+      organizerPubkey,
+      isOnline: !!onlineUrl,
+      onlineUrl,
+      youtubeUrl: get('youtube'),
+      youtubeRecordingUrl: get('youtube_recording'),
+      location: get('location'),
+      lat: latStr ? parseFloat(latStr) : undefined,
+      lon: lonStr ? parseFloat(lonStr) : undefined,
+      capacity: capacityStr ? parseInt(capacityStr, 10) : undefined,
+      cover: get('cover'),
+      fiatValue: fiatValueStr ? parseFloat(fiatValueStr) : undefined,
+      guests: getAll('guest'),
+      attachments: getAll('attachment'),
+      category: get('category'),
+      dTag,
+      timezone: get('timezone'),
+      schedule,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function fetchEventsFromRelays(timeout = 15000): Promise<LanaEvent[]> {
+  return new Promise((resolve) => {
+    const allEvents: any[] = [];
+    const seenIds = new Set<string>();
+    let completed = 0;
+
+    const onDone = () => {
+      completed++;
+      if (completed >= RELAYS.length) {
+        // Deduplicate by dTag, keep newest
+        const byKey = new Map<string, any>();
+        for (const ev of allEvents) {
+          const dTag = ev.tags?.find((t: string[]) => t[0] === 'd')?.[1] || '';
+          const key = `${ev.pubkey}:${dTag}`;
+          const existing = byKey.get(key);
+          if (!existing || ev.created_at > existing.created_at) byKey.set(key, ev);
+        }
+
+        const now = new Date();
+        const events: LanaEvent[] = [];
+        for (const ev of byKey.values()) {
+          const parsed = parseLanaEvent(ev);
+          if (!parsed || parsed.status !== 'active') continue;
+
+          // Only upcoming/happening events
+          let isUpcoming: boolean;
+          if (parsed.schedule.length > 0) {
+            const lastEntry = parsed.schedule[parsed.schedule.length - 1];
+            const lastEnd = lastEntry.end || new Date(lastEntry.start.getTime() + 2 * 60 * 60 * 1000);
+            isUpcoming = lastEnd > now;
+          } else {
+            const eventEnd = parsed.end || new Date(parsed.start.getTime() + 2 * 60 * 60 * 1000);
+            isUpcoming = parsed.start > now || eventEnd > now;
+          }
+          if (isUpcoming) events.push(parsed);
+        }
+
+        // Sort by start date ascending (closest first)
+        events.sort((a, b) => a.start.getTime() - b.start.getTime());
+        resolve(events);
+      }
+    };
+
+    for (const relayUrl of RELAYS) {
+      try {
+        const ws = new WebSocket(relayUrl);
+        const subId = `ev_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+        const t = setTimeout(() => { try { ws.close(); } catch {} onDone(); }, timeout);
+
+        ws.onopen = () => ws.send(JSON.stringify(['REQ', subId, { kinds: [36677] }]));
+        ws.onmessage = (e) => {
+          try {
+            const msg = JSON.parse(e.data);
+            if (msg[0] === 'EVENT' && msg[1] === subId && !seenIds.has(msg[2].id)) {
+              seenIds.add(msg[2].id);
+              allEvents.push(msg[2]);
+            }
+            if (msg[0] === 'EOSE') { clearTimeout(t); ws.close(); onDone(); }
+          } catch {}
+        };
+        ws.onerror = () => { clearTimeout(t); onDone(); };
+      } catch { onDone(); }
+    }
+  });
+}
+
+function getEventStatus(event: LanaEvent): 'happening-now' | 'today' | 'upcoming' {
+  const now = new Date();
+  const fifteenMin = new Date(now.getTime() + 15 * 60 * 1000);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+
+  if (event.schedule.length > 0) {
+    for (const entry of event.schedule) {
+      const entryEnd = entry.end || new Date(entry.start.getTime() + 2 * 60 * 60 * 1000);
+      if ((entry.start <= now && entryEnd > now) || (entry.start > now && entry.start <= fifteenMin)) return 'happening-now';
+    }
+    for (const entry of event.schedule) {
+      if (entry.start >= today && entry.start < tomorrow) return 'today';
+    }
+    return 'upcoming';
+  }
+
+  const eventEnd = event.end || new Date(event.start.getTime() + 2 * 60 * 60 * 1000);
+  if ((event.start <= now && eventEnd > now) || (event.start > now && event.start <= fifteenMin)) return 'happening-now';
+  if (event.start >= today && event.start < tomorrow) return 'today';
+  return 'upcoming';
+}
+
+const LANGUAGE_LABELS: Record<string, string> = {
+  sl: 'Slovenščina', en: 'English', de: 'Deutsch', hr: 'Hrvatski', sr: 'Srpski',
+  it: 'Italiano', fr: 'Français', es: 'Español', pt: 'Português', nl: 'Nederlands',
+};
+
+const EVENT_TYPE_LABELS: Record<string, string> = {
+  governance: 'Governance', awareness: 'Awareness', workshop: 'Workshop',
+  celebration: 'Celebration', meetup: 'Meetup', conference: 'Conference', other: 'Other',
+};
+
+function formatEventDate(date: Date, tz?: string): string {
+  try {
+    return date.toLocaleDateString('sl-SI', {
+      weekday: 'short', day: 'numeric', month: 'long', year: 'numeric',
+      ...(tz ? { timeZone: tz } : {}),
+    });
+  } catch {
+    return date.toLocaleDateString('sl-SI', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
+  }
+}
+
+function formatEventTime(date: Date, tz?: string): string {
+  try {
+    return date.toLocaleTimeString('sl-SI', {
+      hour: '2-digit', minute: '2-digit',
+      ...(tz ? { timeZone: tz } : {}),
+    });
+  } catch {
+    return date.toLocaleTimeString('sl-SI', { hour: '2-digit', minute: '2-digit' });
+  }
+}
+
 function pickRandom<T>(arr: T[], count: number): T[] {
   const shuffled = [...arr].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, count);
 }
-
-const events = [
-  { title: "Lana Delavnica: Osnove Ekonomije Obilja", date: "15. april 2026", location: "Ljubljana" },
-  { title: "Srečanje skupnosti Lana", date: "28. april 2026", location: "Maribor" },
-  { title: "Lana Festival Obilja 2026", date: "10. maj 2026", location: "Bled" },
-];
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -108,6 +333,9 @@ const Index = () => {
   const [merchants, setMerchants] = useState<MerchantUnit[]>([]);
   const [displayed, setDisplayed] = useState<MerchantUnit[]>([]);
   const [isMerchantsLoading, setIsMerchantsLoading] = useState(true);
+  const [lanaEvents, setLanaEvents] = useState<LanaEvent[]>([]);
+  const [isEventsLoading, setIsEventsLoading] = useState(true);
+  const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
 
   useEffect(() => {
     fetchMerchantsFromRelays().then(units => {
@@ -115,9 +343,14 @@ const Index = () => {
       setDisplayed(pickRandom(units, 3));
       setIsMerchantsLoading(false);
     });
+    fetchEventsFromRelays().then(events => {
+      setLanaEvents(events);
+      setIsEventsLoading(false);
+    });
   }, []);
 
   const handleShuffle = () => setDisplayed(pickRandom(merchants, 3));
+  const toggleEvent = (dTag: string) => setExpandedEvent(prev => prev === dTag ? null : dTag);
 
   return (
     <div className="min-h-screen bg-background">
@@ -286,24 +519,256 @@ const Index = () => {
           >
             <Calendar className="w-7 h-7 text-gold" /> Lana Events
           </motion.h2>
-          <div className="space-y-4">
-            {events.map((event, i) => (
-              <motion.div
-                key={event.title}
-                variants={fadeUp} custom={i + 1}
-                initial="hidden" whileInView="visible" viewport={{ once: true }}
-                className="flex items-center gap-6 p-5 rounded-xl bg-card border border-border hover:border-gold transition-colors"
-              >
-                <div className="flex-shrink-0 w-14 h-14 rounded-lg bg-primary flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-primary-foreground" />
-                </div>
-                <div>
-                  <h3 className="font-display font-semibold text-foreground">{event.title}</h3>
-                  <p className="text-sm text-muted-foreground">{event.date} · {event.location}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+
+          {isEventsLoading && (
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+              <Loader2 className="w-6 h-6 animate-spin mb-2" />
+              <p className="text-sm">Loading events from Nostr relays...</p>
+            </div>
+          )}
+
+          {!isEventsLoading && lanaEvents.length === 0 && (
+            <div className="text-center py-12 text-muted-foreground">
+              <Calendar className="w-10 h-10 mx-auto mb-2 opacity-40" />
+              <p className="text-sm">No upcoming events at the moment.</p>
+            </div>
+          )}
+
+          {!isEventsLoading && lanaEvents.length > 0 && (
+            <div className="space-y-4">
+              {lanaEvents.map((event, i) => {
+                const status = getEventStatus(event);
+                const isExpanded = expandedEvent === event.dTag;
+
+                return (
+                  <motion.div
+                    key={event.dTag}
+                    variants={fadeUp} custom={i + 1}
+                    initial="hidden" whileInView="visible" viewport={{ once: true }}
+                    className="rounded-xl bg-card border border-border hover:border-gold transition-colors overflow-hidden"
+                  >
+                    {/* Card Header — clickable */}
+                    <button
+                      onClick={() => toggleEvent(event.dTag)}
+                      className="w-full text-left p-5 flex items-start gap-4 sm:gap-6"
+                    >
+                      {/* Cover or Icon */}
+                      {event.cover ? (
+                        <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden">
+                          <img src={event.cover} alt={event.title} className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="flex-shrink-0 w-14 h-14 rounded-lg bg-primary flex items-center justify-center">
+                          <Calendar className="w-6 h-6 text-primary-foreground" />
+                        </div>
+                      )}
+
+                      <div className="flex-1 min-w-0">
+                        {/* Badges row */}
+                        <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                          {status === 'happening-now' && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400 text-xs font-semibold rounded-full animate-pulse">
+                              <Radio className="w-3 h-3" /> LIVE
+                            </span>
+                          )}
+                          {status === 'today' && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 text-xs font-semibold rounded-full">
+                              <Clock className="w-3 h-3" /> Today
+                            </span>
+                          )}
+                          {event.isOnline ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-medium rounded-full">
+                              <Globe className="w-3 h-3" /> Online
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium rounded-full">
+                              <MapPin className="w-3 h-3" /> Live
+                            </span>
+                          )}
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 text-xs font-medium rounded-full">
+                            <Languages className="w-3 h-3" /> {LANGUAGE_LABELS[event.language] || event.language}
+                          </span>
+                          {event.eventType && (
+                            <span className="px-2 py-0.5 bg-muted text-muted-foreground text-xs rounded-full">
+                              {EVENT_TYPE_LABELS[event.eventType] || event.eventType}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Title */}
+                        <h3 className="font-display font-semibold text-foreground text-base sm:text-lg leading-tight">
+                          {event.title}
+                        </h3>
+
+                        {/* Date & Location */}
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-sm text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3.5 h-3.5" />
+                            {formatEventDate(event.start, event.timezone)}
+                            {' · '}
+                            {formatEventTime(event.start, event.timezone)}
+                            {event.end && ` – ${formatEventTime(event.end, event.timezone)}`}
+                          </span>
+                          {event.location && (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="w-3.5 h-3.5" />
+                              {event.location}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Expand indicator */}
+                      <div className="flex-shrink-0 mt-1">
+                        {isExpanded ? (
+                          <ChevronUp className="w-5 h-5 text-muted-foreground" />
+                        ) : (
+                          <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                        )}
+                      </div>
+                    </button>
+
+                    {/* Expanded Detail */}
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.25 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-5 pb-5 pt-0 space-y-4 border-t border-border">
+                            {/* Cover image (large) */}
+                            {event.cover && (
+                              <div className="rounded-lg overflow-hidden mt-4 max-h-64">
+                                <img src={event.cover} alt={event.title} className="w-full h-full object-cover" />
+                              </div>
+                            )}
+
+                            {/* Description */}
+                            {event.content && (
+                              <div>
+                                <h4 className="text-sm font-semibold text-foreground mb-1">Description</h4>
+                                <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                                  {event.content}
+                                </p>
+                              </div>
+                            )}
+
+                            {/* Multi-day schedule */}
+                            {event.schedule.length > 0 && (
+                              <div>
+                                <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                                  <Clock className="w-4 h-4" /> Schedule ({event.schedule.length} days)
+                                </h4>
+                                <div className="space-y-1.5">
+                                  {event.schedule.map((entry, idx) => (
+                                    <div key={idx} className="flex items-center gap-3 text-sm text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
+                                      <span className="font-medium text-foreground w-6">{idx + 1}.</span>
+                                      <span>{formatEventDate(entry.start, event.timezone)}</span>
+                                      <span>
+                                        {formatEventTime(entry.start, event.timezone)}
+                                        {entry.end && ` – ${formatEventTime(entry.end, event.timezone)}`}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Info grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                              {event.timezone && (
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <Clock className="w-4 h-4 flex-shrink-0" />
+                                  <span>Timezone: {event.timezone}</span>
+                                </div>
+                              )}
+                              {event.location && (
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <MapPin className="w-4 h-4 flex-shrink-0" />
+                                  <span>{event.location}</span>
+                                  {event.lat && event.lon && (
+                                    <a
+                                      href={`https://maps.google.com/?q=${event.lat},${event.lon}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 dark:text-blue-400 hover:underline"
+                                      onClick={e => e.stopPropagation()}
+                                    >
+                                      <ExternalLink className="w-3.5 h-3.5" />
+                                    </a>
+                                  )}
+                                </div>
+                              )}
+                              {event.capacity && (
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <Users className="w-4 h-4 flex-shrink-0" />
+                                  <span>Capacity: {event.capacity}</span>
+                                </div>
+                              )}
+                              {event.fiatValue != null && event.fiatValue > 0 && (
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <Tag className="w-4 h-4 flex-shrink-0" />
+                                  <span>Value: {event.fiatValue} EUR</span>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Links */}
+                            <div className="flex flex-wrap gap-3">
+                              {event.onlineUrl && (
+                                <a
+                                  href={event.onlineUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition"
+                                  onClick={e => e.stopPropagation()}
+                                >
+                                  <Globe className="w-4 h-4" /> Join Online
+                                </a>
+                              )}
+                              {event.youtubeUrl && (
+                                <a
+                                  href={event.youtubeUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/30 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 transition"
+                                  onClick={e => e.stopPropagation()}
+                                >
+                                  <Video className="w-4 h-4" /> Watch on YouTube
+                                </a>
+                              )}
+                              {event.youtubeRecordingUrl && (
+                                <a
+                                  href={event.youtubeRecordingUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/30 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 transition"
+                                  onClick={e => e.stopPropagation()}
+                                >
+                                  <Video className="w-4 h-4" /> Recording
+                                </a>
+                              )}
+                            </div>
+
+                            {/* Guests */}
+                            {event.guests.length > 0 && (
+                              <div className="text-sm text-muted-foreground">
+                                <span className="font-medium text-foreground">Guests: </span>
+                                {event.guests.length} invited
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
         </section>
       </main>
 
