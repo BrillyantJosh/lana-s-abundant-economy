@@ -327,7 +327,7 @@ const Index = () => {
             src={lanaLogo}
             alt="Lana"
             className="w-8 h-8 rounded"
-            style={{ filter: 'invert(58%) sepia(89%) saturate(400%) hue-rotate(10deg) brightness(95%)' }}
+            style={{ filter: 'brightness(0) saturate(100%) invert(62%) sepia(85%) saturate(500%) hue-rotate(10deg) brightness(95%)' }}
           />
           <span>LanaPays.<span className="text-gold">Us</span></span>
         </h1>
