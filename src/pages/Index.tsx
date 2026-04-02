@@ -33,55 +33,37 @@ function resolveImageUrl(url: string): string {
   return url;
 }
 
-function fetchMerchantsFromRelays(timeout = 15000): Promise<MerchantUnit[]> {
+function queryRelays(kind: number, timeout = 15000): Promise<any[]> {
   return new Promise((resolve) => {
     const allEvents: any[] = [];
     const seenIds = new Set<string>();
     let completed = 0;
+    let resolved = false;
 
-    const onDone = () => {
+    const finish = () => {
+      if (resolved) return;
       completed++;
       if (completed >= RELAYS.length) {
-        // Deduplicate by pubkey:d-tag, keep newest
-        const byKey = new Map<string, any>();
-        for (const ev of allEvents) {
-          const dTag = ev.tags?.find((t: string[]) => t[0] === 'd')?.[1] || '';
-          const key = `${ev.pubkey}:${dTag}`;
-          const existing = byKey.get(key);
-          if (!existing || ev.created_at > existing.created_at) byKey.set(key, ev);
-        }
-
-        const units: MerchantUnit[] = [];
-        for (const ev of byKey.values()) {
-          const get = (n: string) => ev.tags?.find((t: string[]) => t[0] === n)?.[1] || '';
-          const images = ev.tags?.filter((t: string[]) => t[0] === 'image').map((t: string[]) => t[1]) || [];
-          const status = get('status') || 'active';
-          const name = get('name');
-          if (status !== 'active' || !name || images.length === 0) continue;
-          units.push({
-            name,
-            category: get('category'),
-            categoryDetail: get('category_detail'),
-            receiverCity: get('receiver_city'),
-            receiverCountry: get('receiver_country'),
-            image: resolveImageUrl(images[0]),
-            content: ev.content || '',
-            pubkey: ev.pubkey,
-            unitId: get('unit_id') || get('d') || '',
-            createdAt: ev.created_at,
-          });
-        }
-        resolve(units);
+        resolved = true;
+        console.log(`[Nostr] KIND ${kind}: collected ${allEvents.length} raw events from ${RELAYS.length} relays`);
+        resolve(allEvents);
       }
     };
 
     for (const relayUrl of RELAYS) {
       try {
         const ws = new WebSocket(relayUrl);
-        const subId = `m_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-        const t = setTimeout(() => { try { ws.close(); } catch {} onDone(); }, timeout);
+        const subId = `q_${kind}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+        const t = setTimeout(() => {
+          console.warn(`[Nostr] ${relayUrl} timeout after ${timeout}ms`);
+          try { ws.close(); } catch {}
+          finish();
+        }, timeout);
 
-        ws.onopen = () => ws.send(JSON.stringify(['REQ', subId, { kinds: [30901] }]));
+        ws.onopen = () => {
+          console.log(`[Nostr] ${relayUrl} connected, requesting KIND ${kind}`);
+          ws.send(JSON.stringify(['REQ', subId, { kinds: [kind] }]));
+        };
         ws.onmessage = (e) => {
           try {
             const msg = JSON.parse(e.data);
@@ -89,12 +71,63 @@ function fetchMerchantsFromRelays(timeout = 15000): Promise<MerchantUnit[]> {
               seenIds.add(msg[2].id);
               allEvents.push(msg[2]);
             }
-            if (msg[0] === 'EOSE') { clearTimeout(t); ws.close(); onDone(); }
+            if (msg[0] === 'EOSE') {
+              console.log(`[Nostr] ${relayUrl} EOSE, got ${allEvents.length} events so far`);
+              clearTimeout(t);
+              try { ws.close(); } catch {}
+              finish();
+            }
           } catch {}
         };
-        ws.onerror = () => { clearTimeout(t); onDone(); };
-      } catch { onDone(); }
+        ws.onerror = () => {
+          console.warn(`[Nostr] ${relayUrl} WebSocket error`);
+          clearTimeout(t);
+          finish();
+        };
+        ws.onclose = () => {
+          // Safety: if closed without EOSE or error, still count as done
+          clearTimeout(t);
+          finish();
+        };
+      } catch (err) {
+        console.warn(`[Nostr] ${relayUrl} exception:`, err);
+        finish();
+      }
     }
+  });
+}
+
+function fetchMerchantsFromRelays(timeout = 15000): Promise<MerchantUnit[]> {
+  return queryRelays(30901, timeout).then(allEvents => {
+    const byKey = new Map<string, any>();
+    for (const ev of allEvents) {
+      const dTag = ev.tags?.find((t: string[]) => t[0] === 'd')?.[1] || '';
+      const key = `${ev.pubkey}:${dTag}`;
+      const existing = byKey.get(key);
+      if (!existing || ev.created_at > existing.created_at) byKey.set(key, ev);
+    }
+
+    const units: MerchantUnit[] = [];
+    for (const ev of byKey.values()) {
+      const get = (n: string) => ev.tags?.find((t: string[]) => t[0] === n)?.[1] || '';
+      const images = ev.tags?.filter((t: string[]) => t[0] === 'image').map((t: string[]) => t[1]) || [];
+      const status = get('status') || 'active';
+      const name = get('name');
+      if (status !== 'active' || !name || images.length === 0) continue;
+      units.push({
+        name,
+        category: get('category'),
+        categoryDetail: get('category_detail'),
+        receiverCity: get('receiver_city'),
+        receiverCountry: get('receiver_country'),
+        image: resolveImageUrl(images[0]),
+        content: ev.content || '',
+        pubkey: ev.pubkey,
+        unitId: get('unit_id') || get('d') || '',
+        createdAt: ev.created_at,
+      });
+    }
+    return units;
   });
 }
 
@@ -209,68 +242,35 @@ function parseLanaEvent(event: any): LanaEvent | null {
 }
 
 function fetchEventsFromRelays(timeout = 15000): Promise<LanaEvent[]> {
-  return new Promise((resolve) => {
-    const allEvents: any[] = [];
-    const seenIds = new Set<string>();
-    let completed = 0;
-
-    const onDone = () => {
-      completed++;
-      if (completed >= RELAYS.length) {
-        // Deduplicate by dTag, keep newest
-        const byKey = new Map<string, any>();
-        for (const ev of allEvents) {
-          const dTag = ev.tags?.find((t: string[]) => t[0] === 'd')?.[1] || '';
-          const key = `${ev.pubkey}:${dTag}`;
-          const existing = byKey.get(key);
-          if (!existing || ev.created_at > existing.created_at) byKey.set(key, ev);
-        }
-
-        const now = new Date();
-        const events: LanaEvent[] = [];
-        for (const ev of byKey.values()) {
-          const parsed = parseLanaEvent(ev);
-          if (!parsed || parsed.status !== 'active') continue;
-
-          // Only upcoming/happening events
-          let isUpcoming: boolean;
-          if (parsed.schedule.length > 0) {
-            const lastEntry = parsed.schedule[parsed.schedule.length - 1];
-            const lastEnd = lastEntry.end || new Date(lastEntry.start.getTime() + 2 * 60 * 60 * 1000);
-            isUpcoming = lastEnd > now;
-          } else {
-            const eventEnd = parsed.end || new Date(parsed.start.getTime() + 2 * 60 * 60 * 1000);
-            isUpcoming = parsed.start > now || eventEnd > now;
-          }
-          if (isUpcoming) events.push(parsed);
-        }
-
-        // Sort by start date ascending (closest first)
-        events.sort((a, b) => a.start.getTime() - b.start.getTime());
-        resolve(events);
-      }
-    };
-
-    for (const relayUrl of RELAYS) {
-      try {
-        const ws = new WebSocket(relayUrl);
-        const subId = `ev_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-        const t = setTimeout(() => { try { ws.close(); } catch {} onDone(); }, timeout);
-
-        ws.onopen = () => ws.send(JSON.stringify(['REQ', subId, { kinds: [36677] }]));
-        ws.onmessage = (e) => {
-          try {
-            const msg = JSON.parse(e.data);
-            if (msg[0] === 'EVENT' && msg[1] === subId && !seenIds.has(msg[2].id)) {
-              seenIds.add(msg[2].id);
-              allEvents.push(msg[2]);
-            }
-            if (msg[0] === 'EOSE') { clearTimeout(t); ws.close(); onDone(); }
-          } catch {}
-        };
-        ws.onerror = () => { clearTimeout(t); onDone(); };
-      } catch { onDone(); }
+  return queryRelays(36677, timeout).then(allEvents => {
+    const byKey = new Map<string, any>();
+    for (const ev of allEvents) {
+      const dTag = ev.tags?.find((t: string[]) => t[0] === 'd')?.[1] || '';
+      const key = `${ev.pubkey}:${dTag}`;
+      const existing = byKey.get(key);
+      if (!existing || ev.created_at > existing.created_at) byKey.set(key, ev);
     }
+
+    const now = new Date();
+    const events: LanaEvent[] = [];
+    for (const ev of byKey.values()) {
+      const parsed = parseLanaEvent(ev);
+      if (!parsed || parsed.status !== 'active') continue;
+
+      let isUpcoming: boolean;
+      if (parsed.schedule.length > 0) {
+        const lastEntry = parsed.schedule[parsed.schedule.length - 1];
+        const lastEnd = lastEntry.end || new Date(lastEntry.start.getTime() + 2 * 60 * 60 * 1000);
+        isUpcoming = lastEnd > now;
+      } else {
+        const eventEnd = parsed.end || new Date(parsed.start.getTime() + 2 * 60 * 60 * 1000);
+        isUpcoming = parsed.start > now || eventEnd > now;
+      }
+      if (isUpcoming) events.push(parsed);
+    }
+
+    events.sort((a, b) => a.start.getTime() - b.start.getTime());
+    return events;
   });
 }
 
@@ -354,15 +354,31 @@ const Index = () => {
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchMerchantsFromRelays().then(units => {
-      setMerchants(units);
-      setDisplayed(pickRandom(units, 3));
-      setIsMerchantsLoading(false);
-    });
-    fetchEventsFromRelays().then(events => {
-      setAllEvents(events);
-      setIsEventsLoading(false);
-    });
+    const loadMerchants = (attempt = 1) => {
+      fetchMerchantsFromRelays().then(units => {
+        if (units.length === 0 && attempt < 3) {
+          console.log(`[Nostr] No merchants on attempt ${attempt}, retrying in 3s...`);
+          setTimeout(() => loadMerchants(attempt + 1), 3000);
+        } else {
+          setMerchants(units);
+          setDisplayed(pickRandom(units, 3));
+          setIsMerchantsLoading(false);
+        }
+      });
+    };
+    const loadEvents = (attempt = 1) => {
+      fetchEventsFromRelays().then(events => {
+        if (events.length === 0 && attempt < 3) {
+          console.log(`[Nostr] No events on attempt ${attempt}, retrying in 3s...`);
+          setTimeout(() => loadEvents(attempt + 1), 3000);
+        } else {
+          setAllEvents(events);
+          setIsEventsLoading(false);
+        }
+      });
+    };
+    loadMerchants();
+    loadEvents();
   }, []);
 
   // Filter events by selected language
