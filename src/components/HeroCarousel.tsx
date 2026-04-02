@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLanguage } from "@/i18n/LanguageContext";
 import samoodgovornostImg from "@/assets/samoodgovornost.jpg";
 import pathOfLifeImg from "@/assets/path-of-life.jpg";
 import economyImg from "@/assets/economy-of-abundance.jpg";
@@ -8,6 +9,7 @@ const images = [economyImg, pathOfLifeImg, samoodgovornostImg];
 
 const HeroCarousel = () => {
   const [current, setCurrent] = useState(0);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const timer = setInterval(() => setCurrent((p) => (p + 1) % images.length), 5000);
@@ -20,7 +22,7 @@ const HeroCarousel = () => {
         <motion.img
           key={current}
           src={images[current]}
-          alt="Ekonomija Obilja"
+          alt={t('carousel.alt')}
           className="absolute inset-0 w-full h-full object-cover"
           initial={{ opacity: 0, scale: 1.05 }}
           animate={{ opacity: 1, scale: 1 }}

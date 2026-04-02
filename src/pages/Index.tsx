@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import HeroCarousel from "@/components/HeroCarousel";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { Store, Wallet, BookOpen, ShoppingBag, Calendar, MapPin, Tag, Loader2, RefreshCw, Globe, Radio, Clock, Languages, ExternalLink, ChevronDown, ChevronUp, Video, Users } from "lucide-react";
 
 interface MerchantUnit {
@@ -306,25 +307,27 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
   celebration: 'Celebration', meetup: 'Meetup', conference: 'Conference', other: 'Other',
 };
 
-function formatEventDate(date: Date, tz?: string): string {
+function formatEventDate(date: Date, tz?: string, locale = 'en'): string {
+  const loc = locale === 'sl' ? 'sl-SI' : 'en-GB';
   try {
-    return date.toLocaleDateString('sl-SI', {
+    return date.toLocaleDateString(loc, {
       weekday: 'short', day: 'numeric', month: 'long', year: 'numeric',
       ...(tz ? { timeZone: tz } : {}),
     });
   } catch {
-    return date.toLocaleDateString('sl-SI', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
+    return date.toLocaleDateString(loc, { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
   }
 }
 
-function formatEventTime(date: Date, tz?: string): string {
+function formatEventTime(date: Date, tz?: string, locale = 'en'): string {
+  const loc = locale === 'sl' ? 'sl-SI' : 'en-GB';
   try {
-    return date.toLocaleTimeString('sl-SI', {
+    return date.toLocaleTimeString(loc, {
       hour: '2-digit', minute: '2-digit',
       ...(tz ? { timeZone: tz } : {}),
     });
   } catch {
-    return date.toLocaleTimeString('sl-SI', { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString(loc, { hour: '2-digit', minute: '2-digit' });
   }
 }
 
@@ -338,11 +341,15 @@ const fadeUp = {
   visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.1, duration: 0.5 } }),
 };
 
+/** Map site language to Nostr event language code for filtering */
+const LANG_TO_EVENT_LANG: Record<string, string> = { en: 'en', sl: 'sl' };
+
 const Index = () => {
+  const { lang, setLang, t } = useLanguage();
   const [merchants, setMerchants] = useState<MerchantUnit[]>([]);
   const [displayed, setDisplayed] = useState<MerchantUnit[]>([]);
   const [isMerchantsLoading, setIsMerchantsLoading] = useState(true);
-  const [lanaEvents, setLanaEvents] = useState<LanaEvent[]>([]);
+  const [allEvents, setAllEvents] = useState<LanaEvent[]>([]);
   const [isEventsLoading, setIsEventsLoading] = useState(true);
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
 
@@ -353,10 +360,16 @@ const Index = () => {
       setIsMerchantsLoading(false);
     });
     fetchEventsFromRelays().then(events => {
-      setLanaEvents(events);
+      setAllEvents(events);
       setIsEventsLoading(false);
     });
   }, []);
+
+  // Filter events by selected language
+  const lanaEvents = useMemo(() => {
+    const eventLang = LANG_TO_EVENT_LANG[lang] || 'en';
+    return allEvents.filter(e => e.language === eventLang);
+  }, [allEvents, lang]);
 
   const handleShuffle = () => setDisplayed(pickRandom(merchants, 3));
   const toggleEvent = (dTag: string) => setExpandedEvent(prev => prev === dTag ? null : dTag);
@@ -365,13 +378,30 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 border-b border-border">
-        <h1 className="text-2xl font-display font-bold text-primary">Ekonomija Obilja</h1>
-        <a
-          href="https://mobile.lanapays.us"
-          className="px-5 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
-        >
-          Log in
-        </a>
+        <h1 className="text-2xl font-display font-bold text-primary">{t('header.title')}</h1>
+        <div className="flex items-center gap-3">
+          {/* Language Switcher */}
+          <div className="flex items-center bg-muted rounded-lg p-0.5">
+            <button
+              onClick={() => setLang('en')}
+              className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${lang === 'en' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              EN
+            </button>
+            <button
+              onClick={() => setLang('sl')}
+              className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${lang === 'sl' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              SI
+            </button>
+          </div>
+          <a
+            href="https://mobile.lanapays.us"
+            className="px-5 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+          >
+            {t('header.login')}
+          </a>
+        </div>
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-16">
@@ -386,19 +416,19 @@ const Index = () => {
           viewport={{ once: true }}
         >
           <motion.h2 variants={fadeUp} custom={0} className="text-3xl md:text-4xl font-display font-bold text-primary">
-            Ekonomija Obilja preoblikuje Ekonomijo v nekaj več
+            {t('about.title')}
           </motion.h2>
           <motion.p variants={fadeUp} custom={1} className="text-lg text-muted-foreground leading-relaxed">
-            V Ekonomiji Obilja se ne gre samo zato, da imamo več denarja, ampak se preoblikuje naš odnos do denarja v bolj lahkotnega.
+            {t('about.description')}
           </motion.p>
         </motion.section>
 
         {/* Action Links */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
-            { icon: Store, label: "Register farm, shop...", href: "https://shop.lanapays.us", desc: "Registrirajte svojo dejavnost" },
-            { icon: Wallet, label: "Check Wallet", href: "https://check.lanapays.us", desc: "Preverite stanje vaše denarnice" },
-            { icon: BookOpen, label: "Learn more", href: "/learn-more", internal: true, desc: "Več o Ekonomiji Obilja" },
+            { icon: Store, label: t('action.register'), href: "https://shop.lanapays.us", desc: t('action.register.desc') },
+            { icon: Wallet, label: t('action.wallet'), href: "https://check.lanapays.us", desc: t('action.wallet.desc') },
+            { icon: BookOpen, label: t('action.learn'), href: "/learn-more", internal: true, desc: t('action.learn.desc') },
           ].map((item, i) => {
             const content = (
               <motion.div
@@ -427,7 +457,7 @@ const Index = () => {
             initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}
           >
             <h2 className="text-2xl font-display font-bold text-primary flex items-center gap-3">
-              <ShoppingBag className="w-7 h-7 text-gold" /> Where can I Buy?
+              <ShoppingBag className="w-7 h-7 text-gold" /> {t('shops.title')}
             </h2>
             {merchants.length > 3 && (
               <button
@@ -435,7 +465,7 @@ const Index = () => {
                 className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition"
               >
                 <RefreshCw className="w-4 h-4" />
-                Show others
+                {t('shops.shuffle')}
               </button>
             )}
           </motion.div>
@@ -443,14 +473,14 @@ const Index = () => {
           {isMerchantsLoading && (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <Loader2 className="w-6 h-6 animate-spin mb-2" />
-              <p className="text-sm">Loading shops from Nostr relays...</p>
+              <p className="text-sm">{t('shops.loading')}</p>
             </div>
           )}
 
           {!isMerchantsLoading && displayed.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
               <Store className="w-10 h-10 mx-auto mb-2 opacity-40" />
-              <p className="text-sm">No active shops found at the moment.</p>
+              <p className="text-sm">{t('shops.empty')}</p>
             </div>
           )}
 
@@ -514,7 +544,7 @@ const Index = () => {
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
               >
                 <Store className="w-4 h-4" />
-                View all {merchants.length} shops
+                {t('shops.viewAll', { count: merchants.length })}
               </a>
             </motion.div>
           )}
@@ -526,20 +556,20 @@ const Index = () => {
             className="text-2xl font-display font-bold text-primary mb-6 flex items-center gap-3"
             initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}
           >
-            <Calendar className="w-7 h-7 text-gold" /> Lana Events
+            <Calendar className="w-7 h-7 text-gold" /> {t('events.title')}
           </motion.h2>
 
           {isEventsLoading && (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <Loader2 className="w-6 h-6 animate-spin mb-2" />
-              <p className="text-sm">Loading events from Nostr relays...</p>
+              <p className="text-sm">{t('events.loading')}</p>
             </div>
           )}
 
           {!isEventsLoading && lanaEvents.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
               <Calendar className="w-10 h-10 mx-auto mb-2 opacity-40" />
-              <p className="text-sm">No upcoming events at the moment.</p>
+              <p className="text-sm">{t('events.empty')}</p>
             </div>
           )}
 
@@ -577,21 +607,21 @@ const Index = () => {
                         <div className="flex flex-wrap items-center gap-2 mb-1.5">
                           {status === 'happening-now' && (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400 text-xs font-semibold rounded-full animate-pulse">
-                              <Radio className="w-3 h-3" /> LIVE
+                              <Radio className="w-3 h-3" /> {t('events.live')}
                             </span>
                           )}
                           {status === 'today' && (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 text-xs font-semibold rounded-full">
-                              <Clock className="w-3 h-3" /> Today
+                              <Clock className="w-3 h-3" /> {t('events.today')}
                             </span>
                           )}
                           {event.isOnline ? (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-medium rounded-full">
-                              <Globe className="w-3 h-3" /> Online
+                              <Globe className="w-3 h-3" /> {t('events.online')}
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium rounded-full">
-                              <MapPin className="w-3 h-3" /> Live
+                              <MapPin className="w-3 h-3" /> {t('events.inPerson')}
                             </span>
                           )}
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 text-xs font-medium rounded-full">
@@ -613,10 +643,10 @@ const Index = () => {
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3.5 h-3.5" />
-                            {formatEventDate(event.start, event.timezone)}
+                            {formatEventDate(event.start, event.timezone, lang)}
                             {' · '}
-                            {formatEventTime(event.start, event.timezone)}
-                            {event.end && ` – ${formatEventTime(event.end, event.timezone)}`}
+                            {formatEventTime(event.start, event.timezone, lang)}
+                            {event.end && ` – ${formatEventTime(event.end, event.timezone, lang)}`}
                           </span>
                           {event.location && (
                             <span className="flex items-center gap-1">
@@ -658,7 +688,7 @@ const Index = () => {
                             {/* Description */}
                             {event.content && (
                               <div>
-                                <h4 className="text-sm font-semibold text-foreground mb-1">Description</h4>
+                                <h4 className="text-sm font-semibold text-foreground mb-1">{t('events.description')}</h4>
                                 <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
                                   {event.content}
                                 </p>
@@ -669,16 +699,16 @@ const Index = () => {
                             {event.schedule.length > 0 && (
                               <div>
                                 <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
-                                  <Clock className="w-4 h-4" /> Schedule ({event.schedule.length} days)
+                                  <Clock className="w-4 h-4" /> {t('events.schedule', { count: event.schedule.length })}
                                 </h4>
                                 <div className="space-y-1.5">
                                   {event.schedule.map((entry, idx) => (
                                     <div key={idx} className="flex items-center gap-3 text-sm text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
                                       <span className="font-medium text-foreground w-6">{idx + 1}.</span>
-                                      <span>{formatEventDate(entry.start, event.timezone)}</span>
+                                      <span>{formatEventDate(entry.start, event.timezone, lang)}</span>
                                       <span>
-                                        {formatEventTime(entry.start, event.timezone)}
-                                        {entry.end && ` – ${formatEventTime(entry.end, event.timezone)}`}
+                                        {formatEventTime(entry.start, event.timezone, lang)}
+                                        {entry.end && ` – ${formatEventTime(entry.end, event.timezone, lang)}`}
                                       </span>
                                     </div>
                                   ))}
@@ -691,7 +721,7 @@ const Index = () => {
                               {event.timezone && (
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                   <Clock className="w-4 h-4 flex-shrink-0" />
-                                  <span>Timezone: {event.timezone}</span>
+                                  <span>{t('events.timezone', { tz: event.timezone! })}</span>
                                 </div>
                               )}
                               {event.location && (
@@ -714,13 +744,13 @@ const Index = () => {
                               {event.capacity && (
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                   <Users className="w-4 h-4 flex-shrink-0" />
-                                  <span>Capacity: {event.capacity}</span>
+                                  <span>{t('events.capacity', { n: event.capacity! })}</span>
                                 </div>
                               )}
                               {event.fiatValue != null && event.fiatValue > 0 && (
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                   <Tag className="w-4 h-4 flex-shrink-0" />
-                                  <span>Value: {event.fiatValue} EUR</span>
+                                  <span>{t('events.value', { n: event.fiatValue! })}</span>
                                 </div>
                               )}
                             </div>
@@ -735,7 +765,7 @@ const Index = () => {
                                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition"
                                   onClick={e => e.stopPropagation()}
                                 >
-                                  <Globe className="w-4 h-4" /> Join Online
+                                  <Globe className="w-4 h-4" /> {t('events.joinOnline')}
                                 </a>
                               )}
                               {event.youtubeUrl && (
@@ -746,7 +776,7 @@ const Index = () => {
                                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/30 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 transition"
                                   onClick={e => e.stopPropagation()}
                                 >
-                                  <Video className="w-4 h-4" /> Watch on YouTube
+                                  <Video className="w-4 h-4" /> {t('events.watchYoutube')}
                                 </a>
                               )}
                               {event.youtubeRecordingUrl && (
@@ -757,7 +787,7 @@ const Index = () => {
                                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/30 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 transition"
                                   onClick={e => e.stopPropagation()}
                                 >
-                                  <Video className="w-4 h-4" /> Recording
+                                  <Video className="w-4 h-4" /> {t('events.recording')}
                                 </a>
                               )}
                             </div>
@@ -765,8 +795,7 @@ const Index = () => {
                             {/* Guests */}
                             {event.guests.length > 0 && (
                               <div className="text-sm text-muted-foreground">
-                                <span className="font-medium text-foreground">Guests: </span>
-                                {event.guests.length} invited
+                                {t('events.guests', { count: event.guests.length })}
                               </div>
                             )}
                           </div>
@@ -782,7 +811,7 @@ const Index = () => {
       </main>
 
       <footer className="text-center py-8 text-sm text-muted-foreground border-t border-border">
-        © 2026 Ekonomija Obilja. Vsa pravica pridržana.
+        {t('footer.copy')}
       </footer>
     </div>
   );
