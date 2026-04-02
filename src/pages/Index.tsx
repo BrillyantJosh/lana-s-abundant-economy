@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import HeroCarousel from "@/components/HeroCarousel";
 import { useLanguage } from "@/i18n/LanguageContext";
 import lanaLogo from "@/assets/lana-logo.png";
-import { Store, Wallet, BookOpen, ShoppingBag, Calendar, MapPin, Tag, Loader2, RefreshCw, Globe, Radio, Clock, Languages, ExternalLink, ChevronDown, ChevronUp, Video, Users } from "lucide-react";
+import { Store, Wallet, BookOpen, ShoppingBag, Calendar, MapPin, Tag, Loader2, RefreshCw, Globe, Radio, Clock, Languages, ExternalLink, ChevronDown, ChevronUp, Video, Users, Newspaper } from "lucide-react";
 
 interface MerchantUnit {
   name: string;
@@ -73,6 +73,32 @@ function fetchMerchantsFromRelays(): Promise<MerchantUnit[]> {
     }
     return units;
   });
+}
+
+// ── Post types ──
+
+interface Post {
+  id: number;
+  title: string;
+  body: string;
+  youtube_url: string;
+  types: string[];
+  language: string;
+  created_at: number;
+}
+
+const POST_TYPE_COLORS: Record<string, string> = {
+  FAQ: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400',
+  INSTRUCTIONS: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
+  NEWS: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400',
+  'Filozofija': 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400',
+  'Pretekli dogodki': 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400',
+};
+
+function getYoutubeEmbedUrl(url: string): string | null {
+  if (!url) return null;
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/);
+  return match ? `https://www.youtube.com/embed/${match[1]}` : null;
 }
 
 // ── LanaEvent types ──
@@ -296,6 +322,10 @@ const Index = () => {
   const [allEvents, setAllEvents] = useState<LanaEvent[]>([]);
   const [isEventsLoading, setIsEventsLoading] = useState(true);
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [isPostsLoading, setIsPostsLoading] = useState(true);
+  const [postFilter, setPostFilter] = useState<string | null>(null);
+  const [expandedPost, setExpandedPost] = useState<number | null>(null);
 
   useEffect(() => {
     fetchMerchantsFromRelays().then(units => {
@@ -307,6 +337,10 @@ const Index = () => {
       setAllEvents(events);
       setIsEventsLoading(false);
     });
+    fetch('/api/posts').then(r => r.json()).then(data => {
+      setPosts(data.posts || []);
+      setIsPostsLoading(false);
+    }).catch(() => setIsPostsLoading(false));
   }, []);
 
   // Filter events by selected language
@@ -314,6 +348,21 @@ const Index = () => {
     const eventLang = LANG_TO_EVENT_LANG[lang] || 'en';
     return allEvents.filter(e => e.language === eventLang);
   }, [allEvents, lang]);
+
+  // Filter posts by language and type
+  const filteredPosts = useMemo(() => {
+    let filtered = posts.filter(p => p.language === lang);
+    if (postFilter) filtered = filtered.filter(p => p.types.includes(postFilter));
+    return filtered;
+  }, [posts, lang, postFilter]);
+
+  // Unique post types for filter buttons
+  const availablePostTypes = useMemo(() => {
+    const langPosts = posts.filter(p => p.language === lang);
+    const types = new Set<string>();
+    langPosts.forEach(p => p.types.forEach(t => types.add(t)));
+    return Array.from(types);
+  }, [posts, lang]);
 
   const handleShuffle = () => setDisplayed(pickRandom(merchants, 3));
   const toggleEvent = (dTag: string) => setExpandedEvent(prev => prev === dTag ? null : dTag);
@@ -749,6 +798,138 @@ const Index = () => {
                               <div className="text-sm text-muted-foreground">
                                 {t('events.guests', { count: event.guests.length })}
                               </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* Posts / News */}
+        <section>
+          <motion.h2
+            className="text-2xl font-display font-bold text-primary mb-4 flex items-center gap-3"
+            initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}
+          >
+            <Newspaper className="w-7 h-7 text-gold" /> {t('posts.title')}
+          </motion.h2>
+
+          {availablePostTypes.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-6">
+              <button
+                onClick={() => setPostFilter(null)}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                  !postFilter ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-muted-foreground border-border hover:border-primary'
+                }`}
+              >
+                {t('posts.filterAll')}
+              </button>
+              {availablePostTypes.map(type => (
+                <button
+                  key={type}
+                  onClick={() => setPostFilter(postFilter === type ? null : type)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                    postFilter === type ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-muted-foreground border-border hover:border-primary'
+                  }`}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {isPostsLoading && (
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+              <Loader2 className="w-6 h-6 animate-spin mb-2" />
+              <p className="text-sm">{t('posts.loading')}</p>
+            </div>
+          )}
+
+          {!isPostsLoading && filteredPosts.length === 0 && (
+            <div className="text-center py-12 text-muted-foreground">
+              <Newspaper className="w-10 h-10 mx-auto mb-2 opacity-40" />
+              <p className="text-sm">{t('posts.empty')}</p>
+            </div>
+          )}
+
+          {!isPostsLoading && filteredPosts.length > 0 && (
+            <div className="space-y-4">
+              {filteredPosts.map((post, i) => {
+                const isExpanded = expandedPost === post.id;
+                const embedUrl = getYoutubeEmbedUrl(post.youtube_url);
+                return (
+                  <motion.div
+                    key={post.id}
+                    variants={fadeUp} custom={i + 1}
+                    initial="hidden" whileInView="visible" viewport={{ once: true }}
+                    className="rounded-xl bg-card border border-border hover:border-gold transition-colors overflow-hidden"
+                  >
+                    <button
+                      onClick={() => setExpandedPost(isExpanded ? null : post.id)}
+                      className="w-full text-left p-5"
+                    >
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        {post.types.map(type => (
+                          <span key={type} className={`px-2 py-0.5 text-xs font-semibold rounded-full ${POST_TYPE_COLORS[type] || 'bg-muted text-muted-foreground'}`}>
+                            {type}
+                          </span>
+                        ))}
+                        {post.youtube_url && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-medium rounded-full">
+                            <Video className="w-3 h-3" /> YouTube
+                          </span>
+                        )}
+                        <span className="text-xs text-muted-foreground ml-auto">
+                          {new Date(post.created_at * 1000).toLocaleDateString(lang === 'sl' ? 'sl-SI' : 'en-US')}
+                        </span>
+                      </div>
+                      <h3 className="font-display font-semibold text-foreground text-base sm:text-lg leading-tight">
+                        {post.title}
+                      </h3>
+                      {!isExpanded && (
+                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{post.body}</p>
+                      )}
+                      <div className="flex items-center justify-end mt-2">
+                        {isExpanded ? <ChevronUp className="w-5 h-5 text-muted-foreground" /> : <ChevronDown className="w-5 h-5 text-muted-foreground" />}
+                      </div>
+                    </button>
+
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.25 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-5 pb-5 pt-0 space-y-4 border-t border-border">
+                            <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed mt-4">{post.body}</p>
+                            {embedUrl && (
+                              <div className="aspect-video rounded-lg overflow-hidden">
+                                <iframe
+                                  src={embedUrl}
+                                  title={post.title}
+                                  className="w-full h-full"
+                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                  allowFullScreen
+                                />
+                              </div>
+                            )}
+                            {post.youtube_url && !embedUrl && (
+                              <a
+                                href={post.youtube_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/30 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 transition"
+                              >
+                                <Video className="w-4 h-4" /> {t('posts.watchVideo')}
+                              </a>
                             )}
                           </div>
                         </motion.div>

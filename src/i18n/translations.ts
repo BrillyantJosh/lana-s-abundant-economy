@@ -71,6 +71,14 @@ const translations = {
     sl: 'Ekonomija Obilja je živo finančno kolesje, ki se dogaja v ciklih podobnih vdihu in izdihu. Ta ekonomija raste organsko in izjemno stabilno zato tudi omogoča stabilne donose za vlagatelje. Pri financiranju lahko sodelujejo ljudje, ki se podučijo o delovanju tega sistema.',
   },
 
+  // Posts / News
+  'posts.title': { en: 'News & Updates', sl: 'Novice & Objave' },
+  'posts.loading': { en: 'Loading posts...', sl: 'Nalagam objave...' },
+  'posts.empty': { en: 'No posts yet.', sl: 'Ni še objav.' },
+  'posts.readMore': { en: 'Read more', sl: 'Preberi več' },
+  'posts.watchVideo': { en: 'Watch video', sl: 'Oglej si video' },
+  'posts.filterAll': { en: 'All', sl: 'Vse' },
+
   // 404
   'notfound.title': { en: 'Oops! Page not found', sl: 'Ups! Stran ni najdena' },
   'notfound.back': { en: 'Return to Home', sl: 'Nazaj na domačo stran' },
