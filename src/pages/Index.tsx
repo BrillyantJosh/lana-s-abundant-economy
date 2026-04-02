@@ -18,12 +18,6 @@ interface MerchantUnit {
   createdAt: number;
 }
 
-const RELAYS = [
-  'wss://relay.lanavault.space',
-  'wss://relay.lanacoin-eternity.com',
-  'wss://relay.lanaheartvoice.com',
-];
-
 /** Resolve relative image paths stored in Nostr events to absolute URLs */
 function resolveImageUrl(url: string): string {
   if (!url) return '';
@@ -33,72 +27,21 @@ function resolveImageUrl(url: string): string {
   return url;
 }
 
-function queryRelays(kind: number, timeout = 15000): Promise<any[]> {
-  return new Promise((resolve) => {
-    const allEvents: any[] = [];
-    const seenIds = new Set<string>();
-    let completed = 0;
-    let resolved = false;
-
-    const finish = () => {
-      if (resolved) return;
-      completed++;
-      if (completed >= RELAYS.length) {
-        resolved = true;
-        console.log(`[Nostr] KIND ${kind}: collected ${allEvents.length} raw events from ${RELAYS.length} relays`);
-        resolve(allEvents);
-      }
-    };
-
-    for (const relayUrl of RELAYS) {
-      try {
-        const ws = new WebSocket(relayUrl);
-        const subId = `q_${kind}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-        const t = setTimeout(() => {
-          console.warn(`[Nostr] ${relayUrl} timeout after ${timeout}ms`);
-          try { ws.close(); } catch {}
-          finish();
-        }, timeout);
-
-        ws.onopen = () => {
-          console.log(`[Nostr] ${relayUrl} connected, requesting KIND ${kind}`);
-          ws.send(JSON.stringify(['REQ', subId, { kinds: [kind] }]));
-        };
-        ws.onmessage = (e) => {
-          try {
-            const msg = JSON.parse(e.data);
-            if (msg[0] === 'EVENT' && msg[1] === subId && !seenIds.has(msg[2].id)) {
-              seenIds.add(msg[2].id);
-              allEvents.push(msg[2]);
-            }
-            if (msg[0] === 'EOSE') {
-              console.log(`[Nostr] ${relayUrl} EOSE, got ${allEvents.length} events so far`);
-              clearTimeout(t);
-              try { ws.close(); } catch {}
-              finish();
-            }
-          } catch {}
-        };
-        ws.onerror = () => {
-          console.warn(`[Nostr] ${relayUrl} WebSocket error`);
-          clearTimeout(t);
-          finish();
-        };
-        ws.onclose = () => {
-          // Safety: if closed without EOSE or error, still count as done
-          clearTimeout(t);
-          finish();
-        };
-      } catch (err) {
-        console.warn(`[Nostr] ${relayUrl} exception:`, err);
-        finish();
-      }
-    }
-  });
+async function queryRelays(kind: number): Promise<any[]> {
+  try {
+    const res = await fetch(`/api/relay-query?kind=${kind}&timeout=15000`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    console.log(`[Nostr] KIND ${kind}: got ${data.events?.length || 0} events via server proxy`);
+    return data.events || [];
+  } catch (err) {
+    console.error(`[Nostr] KIND ${kind} fetch error:`, err);
+    return [];
+  }
 }
 
-function fetchMerchantsFromRelays(timeout = 15000): Promise<MerchantUnit[]> {
-  return queryRelays(30901, timeout).then(allEvents => {
+function fetchMerchantsFromRelays(): Promise<MerchantUnit[]> {
+  return queryRelays(30901).then(allEvents => {
     const byKey = new Map<string, any>();
     for (const ev of allEvents) {
       const dTag = ev.tags?.find((t: string[]) => t[0] === 'd')?.[1] || '';
@@ -241,8 +184,8 @@ function parseLanaEvent(event: any): LanaEvent | null {
   }
 }
 
-function fetchEventsFromRelays(timeout = 15000): Promise<LanaEvent[]> {
-  return queryRelays(36677, timeout).then(allEvents => {
+function fetchEventsFromRelays(): Promise<LanaEvent[]> {
+  return queryRelays(36677).then(allEvents => {
     const byKey = new Map<string, any>();
     for (const ev of allEvents) {
       const dTag = ev.tags?.find((t: string[]) => t[0] === 'd')?.[1] || '';
@@ -354,31 +297,15 @@ const Index = () => {
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadMerchants = (attempt = 1) => {
-      fetchMerchantsFromRelays().then(units => {
-        if (units.length === 0 && attempt < 3) {
-          console.log(`[Nostr] No merchants on attempt ${attempt}, retrying in 3s...`);
-          setTimeout(() => loadMerchants(attempt + 1), 3000);
-        } else {
-          setMerchants(units);
-          setDisplayed(pickRandom(units, 3));
-          setIsMerchantsLoading(false);
-        }
-      });
-    };
-    const loadEvents = (attempt = 1) => {
-      fetchEventsFromRelays().then(events => {
-        if (events.length === 0 && attempt < 3) {
-          console.log(`[Nostr] No events on attempt ${attempt}, retrying in 3s...`);
-          setTimeout(() => loadEvents(attempt + 1), 3000);
-        } else {
-          setAllEvents(events);
-          setIsEventsLoading(false);
-        }
-      });
-    };
-    loadMerchants();
-    loadEvents();
+    fetchMerchantsFromRelays().then(units => {
+      setMerchants(units);
+      setDisplayed(pickRandom(units, 3));
+      setIsMerchantsLoading(false);
+    });
+    fetchEventsFromRelays().then(events => {
+      setAllEvents(events);
+      setIsEventsLoading(false);
+    });
   }, []);
 
   // Filter events by selected language
