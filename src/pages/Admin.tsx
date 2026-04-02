@@ -194,20 +194,20 @@ const Admin = () => {
   // ── Admin dashboard ──
   return (
     <div className="min-h-screen bg-background">
-      <header className="flex items-center justify-between px-6 py-4 border-b border-border">
-        <Link to="/" className="flex items-center gap-2 text-primary font-display font-bold text-xl hover:opacity-80 transition-opacity">
-          <ArrowLeft className="w-5 h-5" />
+      <header className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 border-b border-border">
+        <Link to="/" className="flex items-center gap-1.5 sm:gap-2 text-primary font-display font-bold text-base sm:text-xl hover:opacity-80 transition-opacity">
+          <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           <span>Admin Panel</span>
         </Link>
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-muted-foreground font-mono">{hexId.slice(0, 8)}...</span>
-          <button onClick={handleLogout} className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <span className="text-xs text-muted-foreground font-mono hidden sm:inline">{hexId.slice(0, 8)}...</span>
+          <button onClick={handleLogout} className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 text-xs sm:text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition">
             <LogOut className="w-4 h-4" /> Logout
           </button>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+      <main className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-8 space-y-6 sm:space-y-8">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-display font-bold text-foreground">Posts</h2>
           {!showForm && (
@@ -222,7 +222,7 @@ const Admin = () => {
 
         {/* Post Form */}
         {showForm && (
-          <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-6 space-y-4">
+          <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-4 sm:p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-display font-bold text-foreground">{editingId ? 'Edit Post' : 'New Post'}</h3>
               <button type="button" onClick={resetForm} className="text-muted-foreground hover:text-foreground">
@@ -324,7 +324,7 @@ const Admin = () => {
         ) : (
           <div className="space-y-3">
             {posts.map(post => (
-              <div key={post.id} className="bg-card border border-border rounded-xl p-5 space-y-2">
+              <div key={post.id} className="bg-card border border-border rounded-xl p-3 sm:p-5 space-y-2">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-1">

@@ -378,42 +378,42 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-border">
-        <h1 className="text-2xl font-display font-bold text-primary flex items-center gap-2">
+      <header className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 border-b border-border">
+        <h1 className="text-lg sm:text-2xl font-display font-bold text-primary flex items-center gap-1.5 sm:gap-2">
           <img
             src={lanaLogo}
             alt="Lana"
-            className="w-8 h-8 rounded"
+            className="w-6 h-6 sm:w-8 sm:h-8 rounded"
             style={{ filter: 'brightness(0) saturate(100%) invert(62%) sepia(85%) saturate(500%) hue-rotate(10deg) brightness(95%)' }}
           />
           <span>LanaPays.<span className="text-gold">Us</span></span>
         </h1>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3">
           {/* Language Switcher */}
           <div className="flex items-center bg-muted rounded-lg p-0.5">
             <button
               onClick={() => setLang('en')}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${lang === 'en' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+              className={`px-2 sm:px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${lang === 'en' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
             >
               EN
             </button>
             <button
               onClick={() => setLang('sl')}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${lang === 'sl' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+              className={`px-2 sm:px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${lang === 'sl' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
             >
               SI
             </button>
           </div>
           <a
             href="https://mobile.lanapays.us"
-            className="px-5 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+            className="px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-xs sm:text-sm hover:opacity-90 transition-opacity"
           >
             {t('header.login')}
           </a>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-8 space-y-16">
+      <main className="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-8 space-y-10 sm:space-y-16">
         {/* Carousel */}
         <HeroCarousel />
 
@@ -424,10 +424,10 @@ const Index = () => {
           whileInView="visible"
           viewport={{ once: true }}
         >
-          <motion.h2 variants={fadeUp} custom={0} className="text-3xl md:text-4xl font-display font-bold text-primary">
+          <motion.h2 variants={fadeUp} custom={0} className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-primary">
             {t('about.title')}
           </motion.h2>
-          <motion.p variants={fadeUp} custom={1} className="text-lg text-muted-foreground leading-relaxed">
+          <motion.p variants={fadeUp} custom={1} className="text-base sm:text-lg text-muted-foreground leading-relaxed">
             {t('about.description')}
           </motion.p>
         </motion.section>
@@ -447,7 +447,7 @@ const Index = () => {
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
-                className="flex flex-col items-center p-8 rounded-xl bg-card border border-border hover:shadow-lg hover:border-gold transition-all cursor-pointer group"
+                className="flex flex-col items-center p-5 sm:p-8 rounded-xl bg-card border border-border hover:shadow-lg hover:border-gold transition-all cursor-pointer group"
               >
                 <item.icon className="w-10 h-10 text-gold mb-4 group-hover:scale-110 transition-transform" />
                 <span className="font-display font-semibold text-lg text-foreground">{item.label}</span>
@@ -465,8 +465,8 @@ const Index = () => {
             className="flex items-center justify-between mb-6"
             initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}
           >
-            <h2 className="text-2xl font-display font-bold text-primary flex items-center gap-3">
-              <ShoppingBag className="w-7 h-7 text-gold" /> {t('shops.title')}
+            <h2 className="text-xl sm:text-2xl font-display font-bold text-primary flex items-center gap-2 sm:gap-3">
+              <ShoppingBag className="w-6 h-6 sm:w-7 sm:h-7 text-gold" /> {t('shops.title')}
             </h2>
             {merchants.length > 3 && (
               <button
@@ -562,10 +562,10 @@ const Index = () => {
         {/* Events */}
         <section>
           <motion.h2
-            className="text-2xl font-display font-bold text-primary mb-6 flex items-center gap-3"
+            className="text-xl sm:text-2xl font-display font-bold text-primary mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3"
             initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}
           >
-            <Calendar className="w-7 h-7 text-gold" /> {t('events.title')}
+            <Calendar className="w-6 h-6 sm:w-7 sm:h-7 text-gold" /> {t('events.title')}
           </motion.h2>
 
           {isEventsLoading && (
@@ -598,7 +598,7 @@ const Index = () => {
                     {/* Card Header — clickable */}
                     <button
                       onClick={() => toggleEvent(event.dTag)}
-                      className="w-full text-left p-5 flex items-start gap-4 sm:gap-6"
+                      className="w-full text-left p-3 sm:p-5 flex items-start gap-3 sm:gap-6"
                     >
                       {/* Cover or Icon */}
                       {event.cover ? (
@@ -686,7 +686,7 @@ const Index = () => {
                           transition={{ duration: 0.25 }}
                           className="overflow-hidden"
                         >
-                          <div className="px-5 pb-5 pt-0 space-y-4 border-t border-border">
+                          <div className="px-3 sm:px-5 pb-3 sm:pb-5 pt-0 space-y-3 sm:space-y-4 border-t border-border">
                             {/* Cover image (large) */}
                             {event.cover && (
                               <div className="rounded-lg overflow-hidden mt-4 max-h-64">
@@ -821,10 +821,10 @@ const Index = () => {
         {/* Posts / News */}
         <section>
           <motion.h2
-            className="text-2xl font-display font-bold text-primary mb-4 flex items-center gap-3"
+            className="text-xl sm:text-2xl font-display font-bold text-primary mb-4 flex items-center gap-2 sm:gap-3"
             initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}
           >
-            <Newspaper className="w-7 h-7 text-gold" /> {t('posts.title')}
+            <Newspaper className="w-6 h-6 sm:w-7 sm:h-7 text-gold" /> {t('posts.title')}
           </motion.h2>
 
           {availablePostTypes.length > 0 && (
@@ -879,7 +879,7 @@ const Index = () => {
                   >
                     <button
                       onClick={() => setExpandedPost(isExpanded ? null : post.id)}
-                      className="w-full text-left p-5"
+                      className="w-full text-left p-3 sm:p-5"
                     >
                       <div className="flex flex-wrap items-center gap-2 mb-2">
                         {post.types.map(type => (
@@ -916,7 +916,7 @@ const Index = () => {
                           transition={{ duration: 0.25 }}
                           className="overflow-hidden"
                         >
-                          <div className="px-5 pb-5 pt-0 space-y-4 border-t border-border">
+                          <div className="px-3 sm:px-5 pb-3 sm:pb-5 pt-0 space-y-3 sm:space-y-4 border-t border-border">
                             <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed mt-4">{post.body}</p>
                             {embedUrl && (
                               <div className="aspect-video rounded-lg overflow-hidden">

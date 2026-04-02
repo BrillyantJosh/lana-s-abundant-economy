@@ -8,7 +8,7 @@ const HeroCarousel = () => {
   const heroImage = lang === 'sl' ? heroSl : heroEn;
 
   return (
-    <div className="relative w-screen left-1/2 -translate-x-1/2 h-[50vw] max-h-[600px] min-h-[300px] overflow-hidden">
+    <div className="relative w-screen left-1/2 -translate-x-1/2 h-[70vw] sm:h-[50vw] max-h-[600px] min-h-[220px] overflow-hidden">
       <AnimatePresence mode="wait">
         <motion.img
           key={lang}
