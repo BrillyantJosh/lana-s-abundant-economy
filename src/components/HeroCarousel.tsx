@@ -8,13 +8,13 @@ const HeroCarousel = () => {
   const heroImage = lang === 'sl' ? heroSl : heroEn;
 
   return (
-    <div className="relative w-full h-[400px] md:h-[500px] overflow-hidden rounded-lg bg-gradient-to-b from-sky-100 to-green-50">
+    <div className="relative w-screen left-1/2 -translate-x-1/2 h-[50vw] max-h-[600px] min-h-[300px] overflow-hidden">
       <AnimatePresence mode="wait">
         <motion.img
           key={lang}
           src={heroImage}
           alt={t('carousel.alt')}
-          className="absolute inset-0 w-full h-full object-contain"
+          className="absolute inset-0 w-full h-full object-cover object-top"
           initial={{ opacity: 0, scale: 1.05 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
