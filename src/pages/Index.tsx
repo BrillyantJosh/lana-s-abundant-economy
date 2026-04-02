@@ -23,6 +23,15 @@ const RELAYS = [
   'wss://relay.lanaheartvoice.com',
 ];
 
+/** Resolve relative image paths stored in Nostr events to absolute URLs */
+function resolveImageUrl(url: string): string {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('/api/uploads/')) return `https://shop.lanapays.us${url}`;
+  if (url.startsWith('/api/storage/')) return `https://app.mejmosefajn.org${url}`;
+  return url;
+}
+
 function fetchMerchantsFromRelays(timeout = 15000): Promise<MerchantUnit[]> {
   return new Promise((resolve) => {
     const allEvents: any[] = [];
@@ -54,7 +63,7 @@ function fetchMerchantsFromRelays(timeout = 15000): Promise<MerchantUnit[]> {
             categoryDetail: get('category_detail'),
             receiverCity: get('receiver_city'),
             receiverCountry: get('receiver_country'),
-            image: images[0],
+            image: resolveImageUrl(images[0]),
             content: ev.content || '',
             pubkey: ev.pubkey,
             unitId: get('unit_id') || get('d') || '',
@@ -184,7 +193,7 @@ function parseLanaEvent(event: any): LanaEvent | null {
       lat: latStr ? parseFloat(latStr) : undefined,
       lon: lonStr ? parseFloat(lonStr) : undefined,
       capacity: capacityStr ? parseInt(capacityStr, 10) : undefined,
-      cover: get('cover'),
+      cover: resolveImageUrl(get('cover') || ''),
       fiatValue: fiatValueStr ? parseFloat(fiatValueStr) : undefined,
       guests: getAll('guest'),
       attachments: getAll('attachment'),
