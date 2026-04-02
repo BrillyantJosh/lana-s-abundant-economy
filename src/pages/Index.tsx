@@ -431,32 +431,35 @@ const Index = () => {
           </motion.p>
         </motion.section>
 
-        {/* Action Links */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { icon: Store, label: t('action.register'), href: "https://shop.lanapays.us/register", desc: t('action.register.desc') },
-            { icon: Wallet, label: t('action.wallet'), href: "https://check.lanapays.us", desc: t('action.wallet.desc') },
-            { icon: BookOpen, label: t('action.learn'), href: "/learn-more", internal: true, desc: t('action.learn.desc') },
-          ].map((item, i) => {
-            const content = (
-              <motion.div
-                key={item.label}
-                variants={fadeUp}
-                custom={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                className="flex flex-col items-center p-5 sm:p-8 rounded-xl bg-card border border-border hover:shadow-lg hover:border-gold transition-all cursor-pointer group"
-              >
-                <item.icon className="w-10 h-10 text-gold mb-4 group-hover:scale-110 transition-transform" />
-                <span className="font-display font-semibold text-lg text-foreground">{item.label}</span>
-                <span className="text-sm text-muted-foreground mt-1">{item.desc}</span>
-              </motion.div>
-            );
-            if (item.internal) return <Link key={item.label} to={item.href!}>{content}</Link>;
-            return <a key={item.label} href={item.href} target="_blank" rel="noopener noreferrer">{content}</a>;
-          })}
-        </section>
+        {/* Action Buttons */}
+        <motion.section
+          className="flex flex-col items-center gap-4"
+          initial="hidden" whileInView="visible" viewport={{ once: true }}
+          variants={fadeUp} custom={0}
+        >
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <a
+              href="https://shop.lanapays.us/register"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-8 py-3 rounded-lg bg-primary text-primary-foreground font-semibold text-base hover:opacity-90 transition-opacity text-center"
+            >
+              {t('action.register.btn')}
+            </a>
+            <a
+              href="https://mobile.lanapays.us"
+              className="px-8 py-3 rounded-lg bg-gold text-white font-semibold text-base hover:opacity-90 transition-opacity text-center"
+            >
+              {t('header.login')}
+            </a>
+          </div>
+          <Link
+            to="/learn-more"
+            className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors mt-1"
+          >
+            {t('action.learn.link')}
+          </Link>
+        </motion.section>
 
         {/* Where to Buy */}
         <section>

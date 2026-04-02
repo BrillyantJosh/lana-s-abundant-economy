@@ -17,11 +17,13 @@ const translations = {
 
   // Action links
   'action.register': { en: 'Register farm, shop...', sl: 'Registriraj kmetijo, trgovino...' },
+  'action.register.btn': { en: 'Registration', sl: 'Registracija' },
   'action.register.desc': { en: 'Register your business', sl: 'Registrirajte svojo dejavnost' },
   'action.wallet': { en: 'Check Wallet', sl: 'Preveri denarnico' },
   'action.wallet.desc': { en: 'Check your wallet balance', sl: 'Preverite stanje vaše denarnice' },
   'action.learn': { en: 'Learn more', sl: 'Več o tem' },
   'action.learn.desc': { en: 'More about the Economy of Abundance', sl: 'Več o Ekonomiji Obilja' },
+  'action.learn.link': { en: 'More about the Economy of Abundance', sl: 'Več o Ekonomiji Obilja' },
 
   // Where to buy
   'shops.title': { en: 'Where can I Buy?', sl: 'Kje lahko kupim?' },
