@@ -11,8 +11,8 @@ const translations = {
     sl: 'Ekonomija Obilja preoblikuje Ekonomijo v nekaj več',
   },
   'about.description': {
-    en: 'The Economy of Abundance is not just about having more money — it transforms our relationship with money into a more light-hearted one.',
-    sl: 'V Ekonomiji Obilja se ne gre samo zato, da imamo več denarja, ampak se preoblikuje naš odnos do denarja v bolj lahkotnega.',
+    en: 'Breathe life into your products and services — as a token of gratitude, your business will receive up to 20% of the invoice value, and so will your customers.',
+    sl: 'Vdahnite življenje svojim izdelkom in storitvam – v znak hvaležnosti bo vaše podjetje prejelo do 20 % vrednosti izdanega računa, enako pa tudi vaši kupci.',
   },
 
   // Action links
