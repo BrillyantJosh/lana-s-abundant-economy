@@ -434,7 +434,7 @@ const Index = () => {
         {/* Action Links */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
-            { icon: Store, label: t('action.register'), href: "https://shop.lanapays.us", desc: t('action.register.desc') },
+            { icon: Store, label: t('action.register'), href: "https://shop.lanapays.us/register", desc: t('action.register.desc') },
             { icon: Wallet, label: t('action.wallet'), href: "https://check.lanapays.us", desc: t('action.wallet.desc') },
             { icon: BookOpen, label: t('action.learn'), href: "/learn-more", internal: true, desc: t('action.learn.desc') },
           ].map((item, i) => {
