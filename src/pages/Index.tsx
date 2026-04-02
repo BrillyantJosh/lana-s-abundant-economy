@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import HeroCarousel from "@/components/HeroCarousel";
 import { useLanguage } from "@/i18n/LanguageContext";
+import lanaLogo from "@/assets/lana-logo.png";
 import { Store, Wallet, BookOpen, ShoppingBag, Calendar, MapPin, Tag, Loader2, RefreshCw, Globe, Radio, Clock, Languages, ExternalLink, ChevronDown, ChevronUp, Video, Users } from "lucide-react";
 
 interface MerchantUnit {
@@ -321,7 +322,15 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 border-b border-border">
-        <h1 className="text-2xl font-display font-bold text-primary">{t('header.title')}</h1>
+        <h1 className="text-2xl font-display font-bold text-primary flex items-center gap-2">
+          <img
+            src={lanaLogo}
+            alt="Lana"
+            className="w-8 h-8 rounded"
+            style={{ filter: 'invert(58%) sepia(89%) saturate(400%) hue-rotate(10deg) brightness(95%)' }}
+          />
+          <span>LanaPays.<span className="text-gold">Us</span></span>
+        </h1>
         <div className="flex items-center gap-3">
           {/* Language Switcher */}
           <div className="flex items-center bg-muted rounded-lg p-0.5">

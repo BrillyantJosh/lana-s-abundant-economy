@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Sprout, Heart, HandCoins, TrendingUp } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
+import lanaLogo from "@/assets/lana-logo.png";
 import type { TranslationKey } from "@/i18n/translations";
 
 const fadeUp = {
@@ -23,7 +24,14 @@ const LearnMore = () => {
     <div className="min-h-screen bg-background">
       <header className="flex items-center justify-between px-6 py-4 border-b border-border">
         <Link to="/" className="flex items-center gap-2 text-primary font-display font-bold text-xl hover:opacity-80 transition-opacity">
-          <ArrowLeft className="w-5 h-5" /> {t('header.title')}
+          <ArrowLeft className="w-5 h-5" />
+          <img
+            src={lanaLogo}
+            alt="Lana"
+            className="w-7 h-7 rounded"
+            style={{ filter: 'invert(58%) sepia(89%) saturate(400%) hue-rotate(10deg) brightness(95%)' }}
+          />
+          <span>LanaPays.<span className="text-gold">Us</span></span>
         </Link>
         <div className="flex items-center gap-3">
           <div className="flex items-center bg-muted rounded-lg p-0.5">
