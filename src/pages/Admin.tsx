@@ -5,7 +5,7 @@ import { wifToNostrHex } from '@/lib/crypto';
 import { useLanguage } from '@/i18n/LanguageContext';
 import lanaLogo from '@/assets/lana-logo.png';
 
-const POST_TYPES = ['FAQ', 'INSTRUCTIONS', 'NEWS', 'Filozofija', 'Pretekli dogodki'] as const;
+const POST_TYPES = ['FAQ', 'INSTRUCTIONS', 'NEWS', 'PHILOSOPHY', 'PAST EVENTS'] as const;
 type PostType = typeof POST_TYPES[number];
 
 interface Post {

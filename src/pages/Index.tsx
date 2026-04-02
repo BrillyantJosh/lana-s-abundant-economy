@@ -91,8 +91,16 @@ const POST_TYPE_COLORS: Record<string, string> = {
   FAQ: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400',
   INSTRUCTIONS: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
   NEWS: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400',
-  'Filozofija': 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400',
-  'Pretekli dogodki': 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400',
+  PHILOSOPHY: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400',
+  'PAST EVENTS': 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400',
+};
+
+const POST_TYPE_LABELS: Record<string, Record<string, string>> = {
+  FAQ: { en: 'FAQ', sl: 'FAQ' },
+  INSTRUCTIONS: { en: 'Instructions', sl: 'Navodila' },
+  NEWS: { en: 'News', sl: 'Novice' },
+  PHILOSOPHY: { en: 'Philosophy', sl: 'Filozofija' },
+  'PAST EVENTS': { en: 'Past Events', sl: 'Pretekli dogodki' },
 };
 
 function getYoutubeEmbedUrl(url: string): string | null {
@@ -837,7 +845,7 @@ const Index = () => {
                     postFilter === type ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-muted-foreground border-border hover:border-primary'
                   }`}
                 >
-                  {type}
+                  {POST_TYPE_LABELS[type]?.[lang] || type}
                 </button>
               ))}
             </div>
@@ -876,7 +884,7 @@ const Index = () => {
                       <div className="flex flex-wrap items-center gap-2 mb-2">
                         {post.types.map(type => (
                           <span key={type} className={`px-2 py-0.5 text-xs font-semibold rounded-full ${POST_TYPE_COLORS[type] || 'bg-muted text-muted-foreground'}`}>
-                            {type}
+                            {POST_TYPE_LABELS[type]?.[lang] || type}
                           </span>
                         ))}
                         {post.youtube_url && (
