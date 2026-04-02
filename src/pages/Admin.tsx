@@ -155,8 +155,7 @@ const Admin = () => {
               src={lanaLogo}
               alt="Lana"
               className="w-16 h-16 mx-auto mb-4 rounded"
-              style={{ filter: 'brightness(0) saturate(100%) invert(62%) sepia(85%) saturate(500%) hue-rotate(10deg) brightness(95%)' }}
-            />
+              />
             <h1 className="text-2xl font-display font-bold text-primary">Admin Panel</h1>
             <p className="text-sm text-muted-foreground mt-1">LanaPays.Us</p>
           </div>
