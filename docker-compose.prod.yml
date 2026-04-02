@@ -1,0 +1,15 @@
+services:
+  web:
+    build: .
+    container_name: lana-abundant-economy-web
+    restart: unless-stopped
+    environment:
+      - VIRTUAL_HOST=lanapays.us,www.lanapays.us
+      - VIRTUAL_PORT=80
+      - LETSENCRYPT_HOST=lanapays.us,www.lanapays.us
+    networks:
+      - webproxy
+
+networks:
+  webproxy:
+    external: true
