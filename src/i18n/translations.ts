@@ -32,6 +32,11 @@ const translations = {
   'shops.empty': { en: 'No active shops found at the moment.', sl: 'Trenutno ni aktivnih trgovin.' },
   'shops.viewAll': { en: 'View all {count} shops', sl: 'Poglej vseh {count} trgovin' },
 
+  // Portal buttons
+  'portals.farms': { en: 'Farms', sl: 'Kmetije' },
+  'portals.restaurants': { en: 'Restaurants', sl: 'Restavracije' },
+  'portals.shops': { en: 'Shops', sl: 'Trgovine' },
+
   // Events
   'events.title': { en: 'Lana Events', sl: 'Lana Dogodki' },
   'events.loading': { en: 'Loading events from Nostr relays...', sl: 'Nalagam dogodke iz Nostr relayjev...' },

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import HeroCarousel from "@/components/HeroCarousel";
 import { useLanguage } from "@/i18n/LanguageContext";
 import lanaLogo from "@/assets/lana-logo.png";
-import { Store, Wallet, BookOpen, ShoppingBag, Calendar, MapPin, Tag, Loader2, RefreshCw, Globe, Radio, Clock, Languages, ExternalLink, ChevronDown, ChevronUp, Video, Users, Newspaper } from "lucide-react";
+import { Store, Wallet, BookOpen, ShoppingBag, Calendar, MapPin, Tag, Loader2, RefreshCw, Globe, Radio, Clock, Languages, ExternalLink, ChevronDown, ChevronUp, Video, Users, Newspaper, Sprout, Utensils } from "lucide-react";
 
 interface MerchantUnit {
   name: string;
@@ -565,20 +565,38 @@ const Index = () => {
             </div>
           )}
 
-          {!isMerchantsLoading && languageMerchants.length > 0 && (
+          {!isMerchantsLoading && (
             <motion.div
-              className="text-center mt-6"
+              className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mt-8"
               variants={fadeUp} custom={4}
               initial="hidden" whileInView="visible" viewport={{ once: true }}
             >
               <a
-                href="https://shop.lanapays.us"
+                href="https://www.lanaeco.farm"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
               >
-                <Store className="w-4 h-4" />
-                {t('shops.viewAll', { count: languageMerchants.length })}
+                <Sprout className="w-4 h-4" />
+                {t('portals.farms')}
+              </a>
+              <a
+                href="https://lana.restaurant/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+              >
+                <Utensils className="w-4 h-4" />
+                {t('portals.restaurants')}
+              </a>
+              <a
+                href="https://www.lanaeco.shop/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                {t('portals.shops')}
               </a>
             </motion.div>
           )}
