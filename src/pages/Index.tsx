@@ -285,6 +285,66 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
   celebration: 'Celebration', meetup: 'Meetup', conference: 'Conference', other: 'Other',
 };
 
+/** Translations for merchant category / category_detail fields (keys are lowercase-trimmed English). */
+const MERCHANT_CATEGORY_TRANSLATIONS: Record<string, { en: string; sl: string }> = {
+  // Main categories
+  'accommodation':         { en: 'Accommodation',      sl: 'Nastanitev' },
+  'beauty & wellness':     { en: 'Beauty & Wellness',  sl: 'Lepota in dobro počutje' },
+  'café & restaurant':     { en: 'Café & Restaurant',  sl: 'Kavarna in restavracija' },
+  'cafe & restaurant':     { en: 'Café & Restaurant',  sl: 'Kavarna in restavracija' },
+  'café / restaurant':     { en: 'Café & Restaurant',  sl: 'Kavarna in restavracija' },
+  'cafe / restaurant':     { en: 'Café & Restaurant',  sl: 'Kavarna in restavracija' },
+  'restaurant - café':     { en: 'Café & Restaurant',  sl: 'Kavarna in restavracija' },
+  'restaurant - cafe':     { en: 'Café & Restaurant',  sl: 'Kavarna in restavracija' },
+  'construction':          { en: 'Construction',       sl: 'Gradbeništvo' },
+  'eco farm':              { en: 'Eco Farm',           sl: 'Eko kmetija' },
+  'eco farming':           { en: 'Eco Farming',        sl: 'Eko kmetovanje' },
+  'fashion':               { en: 'Fashion',            sl: 'Moda' },
+  'furniture':             { en: 'Furniture',          sl: 'Pohištvo' },
+  'kids':                  { en: 'Kids',               sl: 'Otroci' },
+  'other':                 { en: 'Other',              sl: 'Drugo' },
+  'pet':                   { en: 'Pet',                sl: 'Ljubljenčki' },
+  'producer':              { en: 'Producer',           sl: 'Proizvajalec' },
+  'service':               { en: 'Service',            sl: 'Storitev' },
+  'shop':                  { en: 'Shop',               sl: 'Trgovina' },
+
+  // Common category_detail values
+  'legal':                         { en: 'Legal',                     sl: 'Pravno' },
+  'crypto education':              { en: 'Crypto Education',          sl: 'Kripto izobraževanje' },
+  'lifestyle':                     { en: 'Lifestyle',                 sl: 'Življenjski slog' },
+  'holistic healing':              { en: 'Holistic Healing',          sl: 'Holistično zdravljenje' },
+  'holistic home planning & mentorship':
+                                    { en: 'Holistic Home Planning & Mentorship',
+                                      sl: 'Holistično načrtovanje doma in mentorstvo' },
+  'one to one mentoring':          { en: 'One-to-One Mentoring',      sl: 'Individualno mentorstvo' },
+  'community welcome & wallet cards':
+                                    { en: 'Community Welcome & Wallet Cards',
+                                      sl: 'Kartice dobrodošlice in denarnice' },
+  'micro dairy':                   { en: 'Micro Dairy',               sl: 'Mikro mlekarna' },
+  'organic wine and extra vergin olive oil':
+                                    { en: 'Organic Wine & Extra Virgin Olive Oil',
+                                      sl: 'Eko vino in ekstra deviško oljčno olje' },
+  'pasture-raised regenerative eggs':
+                                    { en: 'Pasture-Raised Regenerative Eggs',
+                                      sl: 'Regenerativna jajca iz proste reje' },
+  'sea view & water bed':          { en: 'Sea View & Water Bed',      sl: 'Morski razgled in vodna postelja' },
+  'top quality':                   { en: 'Top Quality',               sl: 'Vrhunska kakovost' },
+  'wood & metal':                  { en: 'Wood & Metal',              sl: 'Les in kovina' },
+  'ai,programming':                { en: 'AI & Programming',          sl: 'UI in programiranje' },
+  'chikens':                       { en: 'Chickens',                  sl: 'Piščanci' },
+  'chickens':                      { en: 'Chickens',                  sl: 'Piščanci' },
+  'organiz':                       { en: 'Organic',                   sl: 'Ekološko' },
+};
+
+/** Translate a merchant category field. Returns the translated label if known, otherwise the original. */
+function translateCategory(value: string | undefined, lang: string): string {
+  if (!value) return '';
+  const key = value.trim().toLowerCase();
+  const entry = MERCHANT_CATEGORY_TRANSLATIONS[key];
+  if (!entry) return value;
+  return (entry as Record<string, string>)[lang] || entry.en;
+}
+
 function formatEventDate(date: Date, tz?: string, locale = 'en'): string {
   const loc = locale === 'sl' ? 'sl-SI' : 'en-GB';
   try {
@@ -547,7 +607,10 @@ const Index = () => {
                     {unit.category && (
                       <p className="text-muted-foreground text-sm flex items-center gap-1.5">
                         <Tag className="w-3.5 h-3.5" />
-                        <span className="truncate">{unit.category}{unit.categoryDetail ? ` / ${unit.categoryDetail}` : ''}</span>
+                        <span className="truncate">
+                          {translateCategory(unit.category, lang)}
+                          {unit.categoryDetail ? ` / ${translateCategory(unit.categoryDetail, lang)}` : ''}
+                        </span>
                       </p>
                     )}
                     {(unit.receiverCity || unit.receiverCountry) && (
