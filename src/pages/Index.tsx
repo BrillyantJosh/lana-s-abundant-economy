@@ -322,6 +322,19 @@ const fadeUp = {
 /** Map site language to Nostr event language code for filtering */
 const LANG_TO_EVENT_LANG: Record<string, string> = { en: 'en', sl: 'sl' };
 
+/** Map site language to accepted receiver_country values for merchants (case-insensitive match). */
+const LANG_TO_COUNTRIES: Record<string, string[]> = {
+  en: ['gb', 'uk', 'united kingdom', 'britain', 'england'],
+  sl: ['si', 'sl', 'slovenia', 'slovenija'],
+};
+
+function matchesCountry(country: string | undefined, lang: string): boolean {
+  const normalized = (country || '').trim().toLowerCase();
+  if (!normalized) return false;
+  const accepted = LANG_TO_COUNTRIES[lang] || [];
+  return accepted.includes(normalized);
+}
+
 const Index = () => {
   const { lang, setLang, t } = useLanguage();
   const [merchants, setMerchants] = useState<MerchantUnit[]>([]);
@@ -338,7 +351,6 @@ const Index = () => {
   useEffect(() => {
     fetchMerchantsFromRelays().then(units => {
       setMerchants(units);
-      setDisplayed(pickRandom(units, 3));
       setIsMerchantsLoading(false);
     });
     fetchEventsFromRelays().then(events => {
@@ -351,10 +363,21 @@ const Index = () => {
     }).catch(() => setIsPostsLoading(false));
   }, []);
 
-  // Filter events by selected language
+  // Filter merchants by country based on current language
+  const languageMerchants = useMemo(() => {
+    return merchants.filter(m => matchesCountry(m.receiverCountry, lang));
+  }, [merchants, lang]);
+
+  // When merchant pool changes (e.g. language switch), re-pick random 3
+  useEffect(() => {
+    setDisplayed(pickRandom(languageMerchants, 3));
+  }, [languageMerchants]);
+
+  // Filter events: show events matching language + always include in-person (physical) events
+  // so location-based events are discoverable regardless of the language toggle.
   const lanaEvents = useMemo(() => {
     const eventLang = LANG_TO_EVENT_LANG[lang] || 'en';
-    return allEvents.filter(e => e.language === eventLang);
+    return allEvents.filter(e => e.language === eventLang || !e.isOnline);
   }, [allEvents, lang]);
 
   // Filter posts by language and type
@@ -372,7 +395,7 @@ const Index = () => {
     return Array.from(types);
   }, [posts, lang]);
 
-  const handleShuffle = () => setDisplayed(pickRandom(merchants, 3));
+  const handleShuffle = () => setDisplayed(pickRandom(languageMerchants, 3));
   const toggleEvent = (dTag: string) => setExpandedEvent(prev => prev === dTag ? null : dTag);
 
   return (
@@ -470,7 +493,7 @@ const Index = () => {
             <h2 className="text-xl sm:text-2xl font-display font-bold text-primary flex items-center gap-2 sm:gap-3">
               <ShoppingBag className="w-6 h-6 sm:w-7 sm:h-7 text-gold" /> {t('shops.title')}
             </h2>
-            {merchants.length > 3 && (
+            {languageMerchants.length > 3 && (
               <button
                 onClick={handleShuffle}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition"
@@ -542,7 +565,7 @@ const Index = () => {
             </div>
           )}
 
-          {!isMerchantsLoading && merchants.length > 0 && (
+          {!isMerchantsLoading && languageMerchants.length > 0 && (
             <motion.div
               className="text-center mt-6"
               variants={fadeUp} custom={4}
@@ -555,7 +578,7 @@ const Index = () => {
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
               >
                 <Store className="w-4 h-4" />
-                {t('shops.viewAll', { count: merchants.length })}
+                {t('shops.viewAll', { count: languageMerchants.length })}
               </a>
             </motion.div>
           )}
