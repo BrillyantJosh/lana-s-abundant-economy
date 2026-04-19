@@ -644,15 +644,6 @@ const Index = () => {
                 {t('portals.farms')}
               </a>
               <a
-                href="https://lana.restaurant/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
-              >
-                <Utensils className="w-4 h-4" />
-                {t('portals.restaurants')}
-              </a>
-              <a
                 href="https://www.lanaeco.shop/"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -660,6 +651,15 @@ const Index = () => {
               >
                 <ShoppingBag className="w-4 h-4" />
                 {t('portals.shops')}
+              </a>
+              <a
+                href="https://lana.restaurant/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+              >
+                <Utensils className="w-4 h-4" />
+                {t('portals.restaurants')}
               </a>
             </motion.div>
           )}
