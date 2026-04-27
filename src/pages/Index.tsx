@@ -41,8 +41,37 @@ async function queryRelays(kind: number): Promise<any[]> {
   }
 }
 
+/**
+ * Fetch KIND 30903 suspension events and return a Set of currently-suspended unit IDs.
+ * A unit is suspended if the latest 30903 for its d-tag has status='suspended' and
+ * either no active_until or active_until > now.
+ */
+function fetchSuspendedUnitIds(): Promise<Set<string>> {
+  return queryRelays(30903).then(allEvents => {
+    // Replaceable: keep latest per d-tag
+    const latestByDTag = new Map<string, any>();
+    for (const ev of allEvents) {
+      const dTag = ev.tags?.find((t: string[]) => t[0] === 'd')?.[1] || '';
+      if (!dTag) continue;
+      const existing = latestByDTag.get(dTag);
+      if (!existing || ev.created_at > existing.created_at) latestByDTag.set(dTag, ev);
+    }
+
+    const nowSec = Math.floor(Date.now() / 1000);
+    const suspended = new Set<string>();
+    for (const [dTag, ev] of latestByDTag) {
+      const get = (n: string) => ev.tags?.find((t: string[]) => t[0] === n)?.[1] || '';
+      if (get('status') !== 'suspended') continue;
+      const activeUntil = get('active_until');
+      if (activeUntil && parseInt(activeUntil, 10) <= nowSec) continue; // expired
+      suspended.add(dTag);
+    }
+    return suspended;
+  });
+}
+
 function fetchMerchantsFromRelays(): Promise<MerchantUnit[]> {
-  return queryRelays(30901).then(allEvents => {
+  return Promise.all([queryRelays(30901), fetchSuspendedUnitIds()]).then(([allEvents, suspendedIds]) => {
     const byKey = new Map<string, any>();
     for (const ev of allEvents) {
       const dTag = ev.tags?.find((t: string[]) => t[0] === 'd')?.[1] || '';
@@ -58,6 +87,9 @@ function fetchMerchantsFromRelays(): Promise<MerchantUnit[]> {
       const status = get('status') || 'active';
       const name = get('name');
       if (status !== 'active' || !name || images.length === 0) continue;
+      const unitId = get('unit_id') || get('d') || '';
+      // Skip merchants suspended by admin via KIND 30903
+      if (unitId && suspendedIds.has(unitId)) continue;
       units.push({
         name,
         category: get('category'),
@@ -67,7 +99,7 @@ function fetchMerchantsFromRelays(): Promise<MerchantUnit[]> {
         image: resolveImageUrl(images[0]),
         content: ev.content || '',
         pubkey: ev.pubkey,
-        unitId: get('unit_id') || get('d') || '',
+        unitId,
         createdAt: ev.created_at,
       });
     }
