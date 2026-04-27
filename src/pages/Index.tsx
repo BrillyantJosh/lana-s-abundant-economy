@@ -414,6 +414,21 @@ const fadeUp = {
 /** Map site language to Nostr event language code for filtering */
 const LANG_TO_EVENT_LANG: Record<string, string> = { en: 'en', sl: 'sl' };
 
+/**
+ * Append a `lang` query parameter to a URL so destination portals open in the
+ * same language the user picked on lanapays.us. Uses 'en' / 'sl' codes.
+ */
+function withLang(url: string, lang: string): string {
+  try {
+    const u = new URL(url);
+    u.searchParams.set('lang', lang);
+    return u.toString();
+  } catch {
+    const sep = url.includes('?') ? '&' : '?';
+    return `${url}${sep}lang=${encodeURIComponent(lang)}`;
+  }
+}
+
 /** Map site language to accepted receiver_country values for merchants (case-insensitive match). */
 const LANG_TO_COUNTRIES: Record<string, string[]> = {
   en: ['gb', 'uk', 'united kingdom', 'britain', 'england'],
@@ -666,69 +681,26 @@ const Index = () => {
               variants={fadeUp} custom={4}
               initial="hidden" whileInView="visible" viewport={{ once: true }}
             >
-              <a
-                href="https://www.lanaeco.farm"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
-              >
-                <Sprout className="w-4 h-4" />
-                {t('portals.farms')}
-              </a>
-              <a
-                href="https://www.lanaeco.shop/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
-              >
-                <ShoppingBag className="w-4 h-4" />
-                {t('portals.shops')}
-              </a>
-              <a
-                href="https://lana.restaurant/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
-              >
-                <Utensils className="w-4 h-4" />
-                {t('portals.restaurants')}
-              </a>
-              <a
-                href="https://lanabeauty.care"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
-              >
-                <Sparkles className="w-4 h-4" />
-                {t('portals.beauty')}
-              </a>
-              <a
-                href="https://lana.fashion"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
-              >
-                <Shirt className="w-4 h-4" />
-                {t('portals.fashion')}
-              </a>
-              <a
-                href="https://lana.furniture"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
-              >
-                <Sofa className="w-4 h-4" />
-                {t('portals.furniture')}
-              </a>
-              <a
-                href="https://lana.construction"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
-              >
-                <HardHat className="w-4 h-4" />
-                {t('portals.construction')}
-              </a>
+              {[
+                { icon: Sprout,      label: t('portals.farms'),       url: 'https://www.lanaeco.farm' },
+                { icon: ShoppingBag, label: t('portals.shops'),       url: 'https://www.lanaeco.shop/' },
+                { icon: Utensils,    label: t('portals.restaurants'), url: 'https://lana.restaurant/' },
+                { icon: Sparkles,    label: t('portals.beauty'),      url: 'https://lanabeauty.care' },
+                { icon: Shirt,       label: t('portals.fashion'),     url: 'https://lana.fashion' },
+                { icon: Sofa,        label: t('portals.furniture'),   url: 'https://lana.furniture' },
+                { icon: HardHat,     label: t('portals.construction'),url: 'https://lana.construction' },
+              ].map(({ icon: Icon, label, url }) => (
+                <a
+                  key={url}
+                  href={withLang(url, lang)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+                >
+                  <Icon className="w-4 h-4" />
+                  {label}
+                </a>
+              ))}
             </motion.div>
           )}
         </section>

@@ -36,7 +36,7 @@ const translations = {
   'portals.farms': { en: 'Farms', sl: 'Kmetije' },
   'portals.restaurants': { en: 'Restaurants', sl: 'Restavracije' },
   'portals.shops': { en: 'Shops', sl: 'Trgovine' },
-  'portals.beauty': { en: 'Beauty & Wellness', sl: 'Nega & Lepota' },
+  'portals.beauty': { en: 'Beauty & Care', sl: 'Nega & Lepota' },
   'portals.fashion': { en: 'Fashion', sl: 'Moda' },
   'portals.furniture': { en: 'Furniture', sl: 'Pohištvo' },
   'portals.construction': { en: 'Construction', sl: 'Gradnja' },
