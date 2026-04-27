@@ -64,22 +64,22 @@ const translations = {
   'learn.lana8wonder.title': { en: 'Lana8Wonder', sl: 'Lana8Wonder' },
   'learn.lana8wonder.content': {
     en: 'By purchasing Lana8Wonder, you become a supporter of the Lana life cycle. The maximum amount an individual can invest in Lana is 100 Euros, receiving a Lana package that is gradually sold into the Economy of Abundance. Learn more at Lana8Wonder.com. Users can also earn Lana through consumption.',
-    sl: 'Z nakupom Lana8Wonder postanete podpornik življenskega cikla Lane. Največji znesek, ki ga posameznik lahko vloži v Lano je 100 Evrov in s tem dobi paketek Lan, ki ga s časoma odprodaja v Ekonomijo Obilja. Več o tem na Lana8Wonder.com. Te Lane lahko uporabnik tudi pridobi skozi potrošnjo.',
+    sl: 'Z nakupom Lana8Wonder postanete podpornik življenskega cikla Lane. Največji znesek, ki ga posameznik lahko vloži v Lano je 100 Evrov in s tem dobi paketek Lan, ki ga sčasoma odprodaja v Ekonomijo Obilja. Več o tem na Lana8Wonder.com. Te Lane lahko uporabnik tudi pridobi skozi potrošnjo.',
   },
   'learn.crowdfunding.title': { en: 'Crowdfunding', sl: 'Crowdfunding' },
   'learn.crowdfunding.content': {
     en: 'Merchants have the opportunity to receive various donations to transform their businesses in the direction of Life.',
-    sl: 'Trgovci imajo možnost dobiti razne donacije za preoblikovanje svojih dejavnosti v smeri Življenja.',
+    sl: 'Trgovci imajo možnost pridobiti razne donacije za preoblikovanje svojih dejavnosti in načina delovanja v smeri Življenja.',
   },
   'learn.responsibility.title': { en: 'Unconditional Self-Responsibility', sl: 'Brezpogojna Samoodgovornost' },
   'learn.responsibility.content': {
     en: 'We are all conditioned to operate from old patterns rooted in the fear of not having enough, which makes us stingy about the quality we give. This causes anger in buyers, leading to conflicts. These conflicts are resolved through unconditional self-responsibility — the seller accepts it on one side, and the buyer on the other, as they may have had excessively high expectations.',
-    sl: 'Vsi smo naučeni delovati po nekih starih vzorcih iz strahu, da nimamo dovolj zato smo vsi precej škrti ko zadeva kakovosti, ki jo dajemo od sebe. To povzroča pri kupcih jezo in dogajajo se konflikti. Te konflikte se razrešuje preko brezpogojne samoodgovornosti. Torej na eni strani jo sprejme prodajalec in na drugi strani jo sprejme kupec, ker je tudi slednji morda imeli previsoka pričakovanja.',
+    sl: 'Vsi smo naučeni delovati po nekih starih vzorcih iz strahu, da nimamo dovolj, zato smo vsi precej škrti, kar zadeva kakovosti, ki jo dajemo od sebe. To povzroča jezo pri kupcih in dogajajo se konflikti. Te konflikte se razrešuje preko brezpogojne samoodgovornosti. Torej - na eni strani jo sprejme prodajalec in na drugi strani jo sprejme kupec, ker je tudi slednji morda imeli previsoka pričakovanja.',
   },
   'learn.financing.title': { en: 'Consumer Financing', sl: 'Financiranje potrošnje' },
   'learn.financing.content': {
     en: 'The Economy of Abundance is a living financial mechanism that operates in cycles similar to breathing in and out. This economy grows organically and extremely stably, enabling stable returns for investors. People who educate themselves about how this system works can participate in financing.',
-    sl: 'Ekonomija Obilja je živo finančno kolesje, ki se dogaja v ciklih podobnih vdihu in izdihu. Ta ekonomija raste organsko in izjemno stabilno zato tudi omogoča stabilne donose za vlagatelje. Pri financiranju lahko sodelujejo ljudje, ki se podučijo o delovanju tega sistema.',
+    sl: 'Ekonomija Obilja je živo finančno kolesje, ki se dogaja v ciklih, podobnih vdihu in izdihu. Ta ekonomija raste organsko in izjemno stabilno, zato tudi omogoča stabilne donose za vlagatelje. Pri financiranju lahko sodelujejo ljudje, ki se podučijo o delovanju tega sistema.',
   },
 
   // Posts / News
