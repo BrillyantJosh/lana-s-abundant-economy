@@ -26,7 +26,7 @@ const translations = {
   'action.learn.link': { en: 'More about the Economy of Abundance', sl: 'Več o Ekonomiji Obilja' },
 
   // Where to buy
-  'shops.title': { en: 'Where can I Buy?', sl: 'Kje lahko kupim?' },
+  'shops.title': { en: 'Where can I Buy?', sl: 'Kje lahko kupujem?' },
   'shops.shuffle': { en: 'Show others', sl: 'Prikaži druge' },
   'shops.loading': { en: 'Loading shops from Nostr relays...', sl: 'Nalagam trgovine iz Nostr relayjev...' },
   'shops.empty': { en: 'No active shops found at the moment.', sl: 'Trenutno ni aktivnih trgovin.' },
@@ -36,6 +36,10 @@ const translations = {
   'portals.farms': { en: 'Farms', sl: 'Kmetije' },
   'portals.restaurants': { en: 'Restaurants', sl: 'Restavracije' },
   'portals.shops': { en: 'Shops', sl: 'Trgovine' },
+  'portals.beauty': { en: 'Beauty & Wellness', sl: 'Nega & Lepota' },
+  'portals.fashion': { en: 'Fashion', sl: 'Moda' },
+  'portals.furniture': { en: 'Furniture', sl: 'Pohištvo' },
+  'portals.construction': { en: 'Construction', sl: 'Gradnja' },
 
   // Events
   'events.title': { en: 'Lana Events', sl: 'Lana Dogodki' },

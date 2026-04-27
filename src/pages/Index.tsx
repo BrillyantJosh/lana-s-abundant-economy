@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import HeroCarousel from "@/components/HeroCarousel";
 import { useLanguage } from "@/i18n/LanguageContext";
 import lanaLogo from "@/assets/lana-logo.png";
-import { Store, Wallet, BookOpen, ShoppingBag, Calendar, MapPin, Tag, Loader2, RefreshCw, Globe, Radio, Clock, Languages, ExternalLink, ChevronDown, ChevronUp, Video, Users, Newspaper, Sprout, Utensils } from "lucide-react";
+import { Store, Wallet, BookOpen, ShoppingBag, Calendar, MapPin, Tag, Loader2, RefreshCw, Globe, Radio, Clock, Languages, ExternalLink, ChevronDown, ChevronUp, Video, Users, Newspaper, Sprout, Utensils, Sparkles, Shirt, Sofa, HardHat } from "lucide-react";
 
 interface MerchantUnit {
   name: string;
@@ -692,6 +692,42 @@ const Index = () => {
               >
                 <Utensils className="w-4 h-4" />
                 {t('portals.restaurants')}
+              </a>
+              <a
+                href="https://lanabeauty.care"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+              >
+                <Sparkles className="w-4 h-4" />
+                {t('portals.beauty')}
+              </a>
+              <a
+                href="https://lana.fashion"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+              >
+                <Shirt className="w-4 h-4" />
+                {t('portals.fashion')}
+              </a>
+              <a
+                href="https://lana.furniture"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+              >
+                <Sofa className="w-4 h-4" />
+                {t('portals.furniture')}
+              </a>
+              <a
+                href="https://lana.construction"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+              >
+                <HardHat className="w-4 h-4" />
+                {t('portals.construction')}
               </a>
             </motion.div>
           )}
