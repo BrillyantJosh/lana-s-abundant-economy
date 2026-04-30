@@ -66,8 +66,9 @@ function fetchFeePolicies(): Promise<Map<string, number>> {
   });
 }
 
-/** Fee tiers that LanaPays.Us highlights on the landing page. */
-const ALLOWED_FEE_TIERS = new Set([10, 15]);
+/** Fee range (inclusive) that LanaPays.Us highlights on the landing page. */
+const MIN_FEE_PERCENT = 15;
+const MAX_FEE_PERCENT = 20;
 
 /**
  * Fetch KIND 30903 suspension events and return a Set of currently-suspended unit IDs.
@@ -122,9 +123,9 @@ function fetchMerchantsFromRelays(): Promise<MerchantUnit[]> {
       const unitId = get('unit_id') || get('d') || '';
       // Skip merchants suspended by admin via KIND 30903
       if (unitId && suspendedIds.has(unitId)) continue;
-      // Only show merchants with a fee policy in the allowed tiers (10% or 15%)
+      // Only show merchants with a fee policy in the allowed range (15%-20% inclusive)
       const fee = unitId ? feeByUnit.get(unitId) : undefined;
-      if (fee === undefined || !ALLOWED_FEE_TIERS.has(fee)) continue;
+      if (fee === undefined || fee < MIN_FEE_PERCENT || fee > MAX_FEE_PERCENT) continue;
       units.push({
         name,
         category: get('category'),
