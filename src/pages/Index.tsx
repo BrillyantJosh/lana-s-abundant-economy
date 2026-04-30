@@ -42,6 +42,34 @@ async function queryRelays(kind: number): Promise<any[]> {
 }
 
 /**
+ * Fetch KIND 30902 fee policies and return a Map of unit_id → fee percentage (number).
+ * Replaceable per unit_id — latest wins. Source of truth for the discount % a
+ * merchant donates back into the Economy of Abundance (5/10/12.5/15/20…).
+ */
+function fetchFeePolicies(): Promise<Map<string, number>> {
+  return queryRelays(30902).then(allEvents => {
+    const latestByUnit = new Map<string, any>();
+    for (const ev of allEvents) {
+      const unitId = ev.tags?.find((t: string[]) => t[0] === 'unit_id')?.[1] || '';
+      if (!unitId) continue;
+      const existing = latestByUnit.get(unitId);
+      if (!existing || ev.created_at > existing.created_at) latestByUnit.set(unitId, ev);
+    }
+
+    const fees = new Map<string, number>();
+    for (const [unitId, ev] of latestByUnit) {
+      const raw = ev.tags?.find((t: string[]) => t[0] === 'lana_discount_per')?.[1];
+      const fee = parseFloat(raw || '');
+      if (!isNaN(fee)) fees.set(unitId, fee);
+    }
+    return fees;
+  });
+}
+
+/** Fee tiers that LanaPays.Us highlights on the landing page. */
+const ALLOWED_FEE_TIERS = new Set([10, 15]);
+
+/**
  * Fetch KIND 30903 suspension events and return a Set of currently-suspended unit IDs.
  * A unit is suspended if the latest 30903 for its d-tag has status='suspended' and
  * either no active_until or active_until > now.
@@ -71,7 +99,11 @@ function fetchSuspendedUnitIds(): Promise<Set<string>> {
 }
 
 function fetchMerchantsFromRelays(): Promise<MerchantUnit[]> {
-  return Promise.all([queryRelays(30901), fetchSuspendedUnitIds()]).then(([allEvents, suspendedIds]) => {
+  return Promise.all([
+    queryRelays(30901),
+    fetchSuspendedUnitIds(),
+    fetchFeePolicies(),
+  ]).then(([allEvents, suspendedIds, feeByUnit]) => {
     const byKey = new Map<string, any>();
     for (const ev of allEvents) {
       const dTag = ev.tags?.find((t: string[]) => t[0] === 'd')?.[1] || '';
@@ -90,6 +122,9 @@ function fetchMerchantsFromRelays(): Promise<MerchantUnit[]> {
       const unitId = get('unit_id') || get('d') || '';
       // Skip merchants suspended by admin via KIND 30903
       if (unitId && suspendedIds.has(unitId)) continue;
+      // Only show merchants with a fee policy in the allowed tiers (10% or 15%)
+      const fee = unitId ? feeByUnit.get(unitId) : undefined;
+      if (fee === undefined || !ALLOWED_FEE_TIERS.has(fee)) continue;
       units.push({
         name,
         category: get('category'),
