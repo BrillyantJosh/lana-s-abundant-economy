@@ -33,13 +33,17 @@ const translations = {
   'shops.viewAll': { en: 'View all {count} shops', sl: 'Poglej vseh {count} trgovin' },
 
   // Portal buttons
-  'portals.farms': { en: 'Farms', sl: 'Kmetije' },
-  'portals.restaurants': { en: 'Restaurants', sl: 'Restavracije' },
-  'portals.shops': { en: 'Shops', sl: 'Trgovine' },
-  'portals.beauty': { en: 'Beauty & Care', sl: 'Nega & Lepota' },
-  'portals.fashion': { en: 'Fashion', sl: 'Moda' },
-  'portals.furniture': { en: 'Furniture', sl: 'Pohištvo' },
-  'portals.construction': { en: 'Construction', sl: 'Gradnja' },
+  'portals.farms':        { en: 'Lana Producers',   sl: 'Lana Pridelovalci' },
+  'portals.shops':        { en: 'Lana Shops',       sl: 'Lana Trgovine' },
+  'portals.restaurants':  { en: 'Lana Restaurants', sl: 'Lana Restavracije' },
+  'portals.beauty':       { en: 'Lana Beauty & Care', sl: 'Lana Lepota & Nega' },
+  'portals.fashion':      { en: 'Lana Fashion',     sl: 'Lana Moda' },
+  'portals.furniture':    { en: 'Lana Furniture',   sl: 'Lana Pohištvo' },
+  'portals.construction': { en: 'Lana Construction', sl: 'Lana Gradnja' },
+  'portals.kids':         { en: 'Lana Kids',        sl: 'Lana Otroci' },
+  'portals.pets':         { en: 'Lana Pets',        sl: 'Lana Hišni ljubljenčki' },
+  'portals.vacations':    { en: 'Lana Vacations',   sl: 'Lana Počitnice' },
+  'portals.marketplace':  { en: 'Lana Marketplace', sl: 'Lana Tržnica' },
 
   // Events
   'events.title': { en: 'Lana Events', sl: 'Lana Dogodki' },

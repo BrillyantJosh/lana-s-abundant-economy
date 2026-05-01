@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import HeroCarousel from "@/components/HeroCarousel";
 import { useLanguage } from "@/i18n/LanguageContext";
 import lanaLogo from "@/assets/lana-logo.png";
-import { Store, Wallet, BookOpen, ShoppingBag, Calendar, MapPin, Tag, Loader2, RefreshCw, Globe, Radio, Clock, Languages, ExternalLink, ChevronDown, ChevronUp, Video, Users, Newspaper, Sprout, Utensils, Sparkles, Shirt, Sofa, HardHat } from "lucide-react";
+import { Store, Wallet, BookOpen, ShoppingBag, Calendar, MapPin, Tag, Loader2, RefreshCw, Globe, Radio, Clock, Languages, ExternalLink, ChevronDown, ChevronUp, Video, Users, Newspaper, Sprout, Utensils, Sparkles, Shirt, Sofa, HardHat, Baby, PawPrint, Palmtree, Tent } from "lucide-react";
 
 interface MerchantUnit {
   name: string;
@@ -718,13 +718,17 @@ const Index = () => {
               initial="hidden" whileInView="visible" viewport={{ once: true }}
             >
               {[
-                { icon: Sprout,      label: t('portals.farms'),       url: 'https://www.lanaeco.farm' },
-                { icon: ShoppingBag, label: t('portals.shops'),       url: 'https://www.lanaeco.shop/' },
-                { icon: Utensils,    label: t('portals.restaurants'), url: 'https://lana.restaurant/' },
-                { icon: Sparkles,    label: t('portals.beauty'),      url: 'https://lanabeauty.care' },
-                { icon: Shirt,       label: t('portals.fashion'),     url: 'https://lana.fashion' },
-                { icon: Sofa,        label: t('portals.furniture'),   url: 'https://lana.furniture' },
-                { icon: HardHat,     label: t('portals.construction'),url: 'https://lana.construction' },
+                { icon: Sprout,      label: t('portals.farms'),        url: 'https://www.lanaeco.farm' },
+                { icon: ShoppingBag, label: t('portals.shops'),        url: 'https://www.lanaeco.shop/' },
+                { icon: Utensils,    label: t('portals.restaurants'),  url: 'https://lana.restaurant/' },
+                { icon: Sparkles,    label: t('portals.beauty'),       url: 'https://lanabeauty.care' },
+                { icon: Shirt,       label: t('portals.fashion'),      url: 'https://lana.fashion' },
+                { icon: Sofa,        label: t('portals.furniture'),    url: 'https://lana.furniture' },
+                { icon: HardHat,     label: t('portals.construction'), url: 'https://lana.construction' },
+                { icon: Baby,        label: t('portals.kids'),         url: 'https://lana.kids' },
+                { icon: PawPrint,    label: t('portals.pets'),         url: 'https://lana.pet' },
+                { icon: Palmtree,    label: t('portals.vacations'),    url: 'https://lana.vacations' },
+                { icon: Tent,        label: t('portals.marketplace'),  url: 'https://lanamarket.place' },
               ].map(({ icon: Icon, label, url }) => (
                 <a
                   key={url}
