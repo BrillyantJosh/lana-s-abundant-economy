@@ -571,7 +571,7 @@ const Index = () => {
           </div>
           <a
             href="https://mobile.lanapays.us"
-            className="px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-xs sm:text-sm hover:opacity-90 transition-opacity"
+            className="px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg bg-gold text-white font-semibold text-xs sm:text-sm hover:opacity-90 transition-opacity"
           >
             {t('header.login')}
           </a>
