@@ -605,7 +605,7 @@ const Index = () => {
         >
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <a
-              href="https://shop.lanapays.us/register"
+              href={`https://shop.lanapays.us/welcome?lang=${lang}`}
               target="_blank"
               rel="noopener noreferrer"
               className="px-8 py-3 rounded-lg bg-primary text-primary-foreground font-semibold text-base hover:opacity-90 transition-opacity text-center"
