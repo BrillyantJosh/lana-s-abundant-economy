@@ -44,7 +44,7 @@ const translations = {
   'portals.pets':         { en: 'Lana Animals',      sl: 'Lana Živali' },
   'portals.vacations':    { en: 'Lana Vacations',   sl: 'Lana Počitnice' },
   'portals.marketplace':  { en: 'Lana Used Goods Marketplace', sl: 'Lana Tržnica rabljenih izdelkov' },
-  'portals.events':       { en: 'Lana Events',                 sl: 'Lana Dogodki' },
+  'portals.events':       { en: 'Lana Events & Workshops',      sl: 'Lana Dogodki & Delavnice' },
 
   // Events
   'events.title': { en: 'Lana Events', sl: 'Lana Dogodki' },
