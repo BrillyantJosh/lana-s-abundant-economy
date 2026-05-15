@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import HeroCarousel from "@/components/HeroCarousel";
 import { useLanguage } from "@/i18n/LanguageContext";
 import lanaLogo from "@/assets/lana-logo.png";
-import { Store, Wallet, BookOpen, ShoppingBag, Calendar, MapPin, Tag, Loader2, RefreshCw, Globe, Radio, Clock, Languages, ExternalLink, ChevronDown, ChevronUp, Video, Users, Newspaper, Sprout, Utensils, Sparkles, Shirt, Sofa, HardHat, Baby, PawPrint, Palmtree, Tent } from "lucide-react";
+import { Store, Wallet, BookOpen, ShoppingBag, Calendar, MapPin, Tag, Loader2, RefreshCw, Globe, Radio, Clock, Languages, ExternalLink, ChevronDown, ChevronUp, Video, Users, Newspaper, Sprout, Utensils, Sparkles, Shirt, Sofa, HardHat, Baby, PawPrint, Palmtree, Tent, CalendarDays } from "lucide-react";
 
 interface MerchantUnit {
   name: string;
@@ -729,6 +729,7 @@ const Index = () => {
                 { icon: PawPrint,    label: t('portals.pets'),         url: 'https://lana.pet' },
                 { icon: Palmtree,    label: t('portals.vacations'),    url: 'https://lana.vacations' },
                 { icon: Tent,        label: t('portals.marketplace'),  url: 'https://lanamarket.place' },
+                { icon: CalendarDays, label: t('portals.events'),       url: 'https://lana.events' },
               ].map(({ icon: Icon, label, url }) => (
                 <a
                   key={url}
