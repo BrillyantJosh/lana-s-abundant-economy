@@ -308,6 +308,17 @@ function fetchEventsFromRelays(): Promise<LanaEvent[]> {
         const lastEntry = parsed.schedule[parsed.schedule.length - 1];
         const lastEnd = lastEntry.end || new Date(lastEntry.start.getTime() + 2 * 60 * 60 * 1000);
         isUpcoming = lastEnd > now;
+        if (isUpcoming) {
+          // For recurring events, advance start/end to the next upcoming occurrence
+          const nextEntry = parsed.schedule.find(entry => {
+            const entryEnd = entry.end || new Date(entry.start.getTime() + 2 * 60 * 60 * 1000);
+            return entryEnd > now;
+          });
+          if (nextEntry) {
+            parsed.start = nextEntry.start;
+            parsed.end = nextEntry.end;
+          }
+        }
       } else {
         const eventEnd = parsed.end || new Date(parsed.start.getTime() + 2 * 60 * 60 * 1000);
         isUpcoming = parsed.start > now || eventEnd > now;
