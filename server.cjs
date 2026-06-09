@@ -137,8 +137,9 @@ app.get('/api/relay-query', async (req, res) => {
     return res.status(400).json({ error: 'Missing or invalid kind parameter' });
   }
   const timeout = Math.min(parseInt(req.query.timeout, 10) || 15000, 30000);
+  const limit = Math.min(parseInt(req.query.limit, 10) || 5000, 10000);
   try {
-    const events = await queryRelays(kind, timeout);
+    const events = await queryRelays(kind, timeout, limit);
     res.json({ events });
   } catch (err) {
     console.error('Relay query error:', err);
@@ -156,7 +157,7 @@ app.get('/{*path}', (_req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
-function queryRelays(kind, timeout = 15000) {
+function queryRelays(kind, timeout = 15000, limit = 5000) {
   return new Promise((resolve) => {
     const allEvents = [];
     const seenIds = new Set();
@@ -184,7 +185,7 @@ function queryRelays(kind, timeout = 15000) {
         }, timeout);
 
         ws.on('open', () => {
-          ws.send(JSON.stringify(['REQ', subId, { kinds: [kind] }]));
+          ws.send(JSON.stringify(['REQ', subId, { kinds: [kind], limit }]));
         });
 
         ws.on('message', (data) => {
