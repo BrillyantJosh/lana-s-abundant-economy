@@ -77,12 +77,11 @@ const MAX_FEE_PERCENT = 20;
  */
 /**
  * Fetch KIND 30903 merchant-status events and return the Set of unit IDs that are
- * currently APPROVED / featured. A unit is featured only when its latest 30903 has
- * status 'active' or 'quota_warning_80' (Brain accepts purchases for these).
- * Backward compat: status 'suspended' with active_until in the past is treated as active.
- * Units with no 30903, or status pending/quota_blocked/suspended(active)/rejected, are excluded.
+ * FEATURED. A unit is featured only when its latest 30903 carries featured:true AND
+ * its status is operational (active / quota_warning_80) — per spec, clients ignore
+ * featured:true unless the unit's status is active.
  */
-function fetchApprovedUnitIds(): Promise<Set<string>> {
+function fetchFeaturedUnitIds(): Promise<Set<string>> {
   return queryRelays(30903).then(allEvents => {
     // Replaceable: keep latest per d-tag
     const latestByDTag = new Map<string, any>();
@@ -93,29 +92,23 @@ function fetchApprovedUnitIds(): Promise<Set<string>> {
       if (!existing || ev.created_at > existing.created_at) latestByDTag.set(dTag, ev);
     }
 
-    const nowSec = Math.floor(Date.now() / 1000);
-    const approved = new Set<string>();
+    const featured = new Set<string>();
     for (const [dTag, ev] of latestByDTag) {
       const get = (n: string) => ev.tags?.find((t: string[]) => t[0] === n)?.[1] || '';
+      if (get('featured') !== 'true') continue;
       const status = get('status');
-      if (status === 'active' || status === 'quota_warning_80') {
-        approved.add(dTag);
-      } else if (status === 'suspended') {
-        // Time-based reactivation: suspension expired ⇒ treat as active
-        const activeUntil = get('active_until');
-        if (activeUntil && parseInt(activeUntil, 10) <= nowSec) approved.add(dTag);
-      }
+      if (status === 'active' || status === 'quota_warning_80') featured.add(dTag);
     }
-    return approved;
+    return featured;
   });
 }
 
 function fetchMerchantsFromRelays(): Promise<MerchantUnit[]> {
   return Promise.all([
     queryRelays(30901),
-    fetchApprovedUnitIds(),
+    fetchFeaturedUnitIds(),
     fetchFeePolicies(),
-  ]).then(([allEvents, approvedIds, feeByUnit]) => {
+  ]).then(([allEvents, featuredIds, feeByUnit]) => {
     const byKey = new Map<string, any>();
     for (const ev of allEvents) {
       const dTag = ev.tags?.find((t: string[]) => t[0] === 'd')?.[1] || '';
@@ -132,8 +125,8 @@ function fetchMerchantsFromRelays(): Promise<MerchantUnit[]> {
       const name = get('name');
       if (status !== 'active' || !name || images.length === 0) continue;
       const unitId = get('unit_id') || get('d') || '';
-      // Only show featured/approved merchants — must have an active KIND 30903 status
-      if (!unitId || !approvedIds.has(unitId)) continue;
+      // Only show merchants flagged featured:true (and active) via KIND 30903
+      if (!unitId || !featuredIds.has(unitId)) continue;
       // Only show merchants with a fee policy in the allowed range (15%-20% inclusive)
       const fee = unitId ? feeByUnit.get(unitId) : undefined;
       if (fee === undefined || fee < MIN_FEE_PERCENT || fee > MAX_FEE_PERCENT) continue;
