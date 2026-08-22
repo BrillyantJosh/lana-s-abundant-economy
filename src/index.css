@@ -1,46 +1,61 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Lato:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Lato:wght@300;400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/*
+  LanaPays.Us design tokens — palette lifted from the lotus hero:
+  cream paper, jade water, old gold line-work, a touch of lotus pink.
+*/
 @layer base {
   :root {
-    --background: 90 30% 97%;
-    --foreground: 140 20% 15%;
+    --background: 42 50% 95%;
+    --foreground: 155 16% 17%;
 
-    --card: 45 40% 97%;
-    --card-foreground: 140 20% 15%;
+    --card: 44 58% 97%;
+    --card-foreground: 155 16% 17%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 140 20% 15%;
+    --popover: 44 58% 98%;
+    --popover-foreground: 155 16% 17%;
 
-    --primary: 140 35% 30%;
-    --primary-foreground: 45 80% 95%;
+    --primary: 158 37% 33%;
+    --primary-foreground: 44 60% 96%;
 
-    --secondary: 45 60% 50%;
-    --secondary-foreground: 140 20% 15%;
+    --secondary: 43 45% 55%;
+    --secondary-foreground: 155 16% 17%;
 
-    --muted: 90 15% 92%;
-    --muted-foreground: 140 10% 45%;
+    --muted: 90 18% 91%;
+    --muted-foreground: 155 10% 42%;
 
-    --accent: 45 70% 55%;
-    --accent-foreground: 140 20% 15%;
+    --accent: 43 55% 55%;
+    --accent-foreground: 155 16% 17%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 90 20% 85%;
-    --input: 90 20% 85%;
-    --ring: 140 35% 30%;
+    --border: 43 30% 82%;
+    --input: 43 30% 82%;
+    --ring: 158 37% 33%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
-    --gold: 45 80% 50%;
-    --gold-light: 45 70% 70%;
-    --green-deep: 140 40% 20%;
-    --green-meadow: 100 45% 45%;
-    --sky: 200 60% 55%;
+    --gold: 43 55% 50%;
+    --gold-deep: 41 62% 34%;
+    --gold-light: 45 62% 74%;
+    --jade: 158 37% 33%;
+    --jade-deep: 160 40% 21%;
+    --jade-soft: 150 30% 80%;
+    --lotus: 352 52% 80%;
+    --lotus-deep: 352 40% 58%;
+    --cream: 42 50% 95%;
+    --cream-deep: 40 45% 90%;
+    --water: 160 30% 90%;
+
+    /* kept for older components */
+    --green-deep: 160 40% 21%;
+    --green-meadow: 150 35% 45%;
+    --sky: 195 50% 60%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -53,25 +68,25 @@
   }
 
   .dark {
-    --background: 140 20% 8%;
-    --foreground: 45 30% 90%;
-    --card: 140 15% 12%;
-    --card-foreground: 45 30% 90%;
-    --popover: 140 15% 12%;
-    --popover-foreground: 45 30% 90%;
-    --primary: 45 60% 50%;
-    --primary-foreground: 140 20% 10%;
-    --secondary: 140 30% 25%;
-    --secondary-foreground: 45 30% 90%;
-    --muted: 140 15% 18%;
-    --muted-foreground: 90 10% 60%;
-    --accent: 45 50% 45%;
-    --accent-foreground: 140 20% 10%;
+    --background: 160 22% 8%;
+    --foreground: 44 40% 90%;
+    --card: 160 18% 11%;
+    --card-foreground: 44 40% 90%;
+    --popover: 160 18% 11%;
+    --popover-foreground: 44 40% 90%;
+    --primary: 43 55% 55%;
+    --primary-foreground: 160 22% 8%;
+    --secondary: 158 30% 24%;
+    --secondary-foreground: 44 40% 90%;
+    --muted: 160 14% 16%;
+    --muted-foreground: 90 10% 62%;
+    --accent: 43 50% 48%;
+    --accent-foreground: 160 22% 8%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 140 15% 20%;
-    --input: 140 15% 20%;
-    --ring: 45 60% 50%;
+    --border: 160 14% 20%;
+    --input: 160 14% 20%;
+    --ring: 43 55% 55%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -87,10 +102,177 @@
   * {
     @apply border-border;
   }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
-    @apply bg-background text-foreground font-body;
+    @apply bg-background text-foreground font-body antialiased;
+    text-rendering: optimizeLegibility;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-display;
+  }
+  ::selection {
+    background: hsl(var(--gold-light) / 0.7);
+    color: hsl(var(--jade-deep));
+  }
+}
+
+@layer components {
+  /* Paper: cream that slowly cools into jade water towards the bottom of the page */
+  .paper-bg {
+    background:
+      radial-gradient(1200px 520px at 50% -120px, hsl(44 62% 98%), transparent 70%),
+      linear-gradient(180deg, hsl(var(--cream)) 0%, hsl(43 48% 94%) 45%, hsl(var(--water)) 100%);
+  }
+
+  .kicker {
+    @apply font-body text-[11px] sm:text-xs font-bold uppercase tracking-[0.32em] text-gold-deep;
+  }
+
+  /* Frosted cream card with a gold hairline */
+  .glass {
+    background: hsl(44 62% 98% / 0.86);
+    border: 1px solid hsl(var(--gold) / 0.28);
+  }
+  /* The fixed header: no backdrop-filter anywhere on the page (it broke painting in embedded/software renderers). */
+  .glass-solid {
+    background: hsl(44 62% 98% / 0.97);
+  }
+
+  /* Double-line oriental frame: the outer hairline plus an inset line */
+  .card-frame {
+    position: relative;
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.6) inset,
+      0 30px 60px -40px hsl(160 30% 15% / 0.45);
+  }
+  .card-frame::before {
+    content: '';
+    position: absolute;
+    inset: 7px;
+    border-radius: inherit;
+    border: 1px solid hsl(var(--gold) / 0.22);
+    pointer-events: none;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 font-body text-sm font-bold tracking-wide transition-all duration-300 select-none;
+  }
+  .btn-jade {
+    @apply text-[hsl(44_60%_96%)];
+    background: linear-gradient(135deg, hsl(158 40% 36%), hsl(160 42% 26%));
+    box-shadow: 0 14px 30px -14px hsl(160 40% 20% / 0.75), 0 1px 0 hsl(0 0% 100% / 0.25) inset;
+  }
+  .btn-jade:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 34px -14px hsl(160 40% 20% / 0.8), 0 1px 0 hsl(0 0% 100% / 0.25) inset;
+  }
+  /* sunny gold with deep-jade type: ≥4.5:1 across the whole gradient (white type measured ~2:1 on the light end) */
+  .btn-gold {
+    @apply text-jade-deep;
+    background: linear-gradient(135deg, hsl(45 62% 62%), hsl(43 58% 56%));
+    box-shadow: 0 14px 30px -14px hsl(41 62% 30% / 0.75), 0 1px 0 hsl(0 0% 100% / 0.45) inset;
+  }
+  .btn-gold:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 34px -14px hsl(41 62% 30% / 0.85), 0 1px 0 hsl(0 0% 100% / 0.35) inset;
+  }
+  .btn-ghost {
+    @apply text-jade-deep border border-jade/30 bg-white/40 hover:bg-white/70 hover:border-jade/60;
+  }
+
+  .link-arrow {
+    @apply inline-flex items-center gap-1.5 font-bold text-jade-deep transition-colors hover:text-gold-deep;
+  }
+  .link-arrow svg {
+    transition: transform 0.3s ease;
+  }
+  .link-arrow:hover svg {
+    transform: translateX(4px);
+  }
+
+  .text-gold-gradient {
+    background: linear-gradient(135deg, hsl(41 62% 34%), hsl(43 60% 44%) 45%, hsl(41 62% 34%));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .scroll-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--gold) / 0.45) transparent;
+  }
+  .scroll-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scroll-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--gold) / 0.45);
+    border-radius: 999px;
+  }
+
+  .section-anchor {
+    scroll-margin-top: 84px;
+  }
+
+  .status-pill {
+    @apply inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold tracking-[0.12em] whitespace-nowrap;
+  }
+  .status-pending { background: hsl(var(--gold) / 0.16); color: hsl(var(--gold-deep)); border: 1px solid hsl(var(--gold) / 0.35); }
+  .status-paid    { background: hsl(var(--jade) / 0.14); color: hsl(var(--jade-deep)); border: 1px solid hsl(var(--jade) / 0.3); }
+  .status-partial { background: hsl(var(--lotus) / 0.35); color: hsl(352 40% 38%); border: 1px solid hsl(var(--lotus-deep) / 0.4); }
+  .status-failed  { background: hsl(0 70% 92%); color: hsl(0 60% 38%); border: 1px solid hsl(0 60% 70% / 0.5); }
+
+  .skeleton {
+    @apply rounded-md bg-jade-soft/40;
+    background-image: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.6), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes mandala-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes mandala-spin-reverse {
+  to { transform: rotate(-360deg); }
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes drift {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.mandala-spin {
+  animation: mandala-spin 160s linear infinite;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+.mandala-spin-reverse {
+  animation: mandala-spin-reverse 220s linear infinite;
+  transform-origin: 50% 50%;
+}
+.drift {
+  animation: drift 6s ease-in-out infinite;
+}
+
+/* whileInView content rests at opacity 0 until scrolled — make print/snapshots show everything */
+@media print {
+  [style*="opacity: 0"] { opacity: 1 !important; transform: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mandala-spin, .mandala-spin-reverse, .drift {
+    animation: none;
+  }
+  html {
+    scroll-behavior: auto;
   }
 }

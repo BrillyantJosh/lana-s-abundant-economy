@@ -11,6 +11,11 @@ export default defineConfig(({ mode }) => ({
     hmr: {
       overlay: false,
     },
+    // The Express API (server.cjs) runs on :3000 in development.
+    proxy: {
+      "/api": { target: "http://localhost:3000", changeOrigin: true },
+      "/health": { target: "http://localhost:3000", changeOrigin: true },
+    },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {

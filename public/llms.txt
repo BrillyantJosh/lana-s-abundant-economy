@@ -1,0 +1,37 @@
+# LanaPays.Us — Economy of Abundance / Ekonomija Obilja
+
+> Together we build the Economy of Abundance — and have a good time.
+> Gradimo skupaj Ekonomijo Obilja – in se mamo fajn :)
+
+LanaPays.Us is the hub of the LANA payment services. A merchant receives the
+full invoice plus a reward on top (2% standard, 5% with Lana8Wonder, up to 20%
+in the Abundance model), the customer gets LANA back, and investors on
+direct.lana.fund finance real, local consumption. LanaPays deducts nothing
+from a sale.
+
+## Live system (reference data from LanaConnects.us)
+- https://lanapays.us/api/connects/overview — current Split, days in the Split,
+  provider count, three most recently registered providers, latest 100 trades
+  with status, funds waiting for investment, LANA in circulation, current BEF
+  framework version. JSON, no auth. Fields are null when their source is down.
+  Upstreams: https://thelana.life/api, https://direct.lana.fund/api/public and
+  https://balancedexchangeframe.work/api/versions.
+
+## Services
+- https://simple.lanapays.us — Simple: sell for LANA in two minutes, LANA-only, self-service registration.
+- https://mobile.lanapays.us — Economy of Abundance mobile till: cash + LANA, remote payment links.
+- https://pay.lanapays.us — LanaPay: hosted checkout, payment links, lanapay.js, REST API + webhooks, WooCommerce.
+
+## More
+- Events: KIND 36677 Nostr events (https://lana.events).
+- Where to buy: featured KIND 30901/30903 business units (https://shop.lanapays.us).
+- Framework: https://balancedexchangeframe.work (Balanced Exchange Framework, llms.txt available).
+
+## Technical solutions
+- https://pos.lanapays.us — LanaPay POS: server-to-server API for physical tills (llms.txt available).
+- https://feed.lanapays.us — Lana Feed: bulk catalogue import (llms.txt available).
+- https://lanafund.me — LanaFund.Me: scan a key, register a unit and accept LANA payments, payout in 3 days.
+
+## Other endpoints
+- https://lanapays.us/api/posts?lang=sl|en — editorial posts (news, instructions, FAQ).
+- https://lanapays.us/api/relay-query?kind=36677 — relay proxy for Nostr kinds used by the page.

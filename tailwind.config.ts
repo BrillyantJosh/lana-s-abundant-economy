@@ -12,8 +12,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["Playfair Display", "serif"],
-        body: ["Lato", "sans-serif"],
+        display: ["Cormorant Garamond", "Georgia", "Times New Roman", "serif"],
+        body: ["Lato", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -29,7 +29,16 @@ export default {
         popover: { DEFAULT: "hsl(var(--popover))", foreground: "hsl(var(--popover-foreground))" },
         card: { DEFAULT: "hsl(var(--card))", foreground: "hsl(var(--card-foreground))" },
         gold: "hsl(var(--gold))",
+        "gold-deep": "hsl(var(--gold-deep))",
         "gold-light": "hsl(var(--gold-light))",
+        jade: "hsl(var(--jade))",
+        "jade-deep": "hsl(var(--jade-deep))",
+        "jade-soft": "hsl(var(--jade-soft))",
+        lotus: "hsl(var(--lotus))",
+        "lotus-deep": "hsl(var(--lotus-deep))",
+        cream: "hsl(var(--cream))",
+        "cream-deep": "hsl(var(--cream-deep))",
+        water: "hsl(var(--water))",
         "green-deep": "hsl(var(--green-deep))",
         "green-meadow": "hsl(var(--green-meadow))",
         sky: "hsl(var(--sky))",

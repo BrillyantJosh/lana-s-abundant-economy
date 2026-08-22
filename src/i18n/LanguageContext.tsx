@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import translations, { type Lang, type TranslationKey } from './translations';
 
 interface LanguageContextType {
@@ -9,21 +9,39 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | null>(null);
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>(() => {
+/** First visit: follow the browser (Slovene browsers get SL), afterwards the stored choice wins. */
+function initialLang(): Lang {
+  try {
+    const fromQuery = new URLSearchParams(window.location.search).get('lang');
+    if (fromQuery === 'sl' || fromQuery === 'en') {
+      localStorage.setItem('lang', fromQuery); // an explicit choice must survive a reload
+      return fromQuery;
+    }
     const stored = localStorage.getItem('lang');
-    return (stored === 'sl' || stored === 'en') ? stored : 'en';
-  });
+    if (stored === 'sl' || stored === 'en') return stored;
+    const nav = (navigator.language || '').toLowerCase();
+    return nav.startsWith('sl') ? 'sl' : 'en';
+  } catch {
+    return 'en';
+  }
+}
+
+export function LanguageProvider({ children }: { children: ReactNode }) {
+  const [lang, setLangState] = useState<Lang>(initialLang);
 
   const setLang = useCallback((l: Lang) => {
     setLangState(l);
-    localStorage.setItem('lang', l);
+    try { localStorage.setItem('lang', l); } catch { /* private mode */ }
   }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
 
   const t = useCallback((key: TranslationKey, params?: Record<string, string | number>): string => {
     const entry = translations[key];
     if (!entry) return key;
-    let text = entry[lang] || entry.en || key;
+    let text: string = entry[lang] || entry.en || key;
     if (params) {
       for (const [k, v] of Object.entries(params)) {
         text = text.replace(`{${k}}`, String(v));
