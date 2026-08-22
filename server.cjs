@@ -164,6 +164,7 @@ const DIRECT_FUND_API = process.env.DIRECT_FUND_API || 'https://direct.lana.fund
 const BEF_API = process.env.BEF_API || 'https://balancedexchangeframe.work/api';
 const SHOP_BASE = 'https://shop.lanapays.us';
 const CONNECTS_TTL_MS = 60 * 1000;
+const LATEST_PROVIDERS = 8; // lanaconnects.us lists 3; this page has room for more
 const connectsCache = { at: 0, data: null, inflight: null, stale: false };
 
 async function fetchJson(url, timeoutMs = 8000) {
@@ -201,7 +202,7 @@ function buildOverview({ dashboard, providers, trades, deals, stats, bef }) {
   const latestProviders = providers === null ? null : named
     .filter(p => Number(p.registeredAt || 0) > 0)
     .sort((a, b) => (Number(b.registeredAt || 0) - Number(a.registeredAt || 0)) || (Number(b.created_at || 0) - Number(a.created_at || 0)))
-    .slice(0, 3)
+    .slice(0, LATEST_PROVIDERS)
     .map(p => ({
       name: normalizeText(p.name),
       image: absoluteUrl(p.logo || p.image || ''),

@@ -16,6 +16,8 @@ import {
 import Mandala from "./Mandala";
 
 const YOUTUBE_ID = "IvMjsdfQ4Kc";
+/** Rows shown in the trades card; the filter still runs over the full feed from the server. */
+const VISIBLE_TRADES = 12;
 
 const card = "relative overflow-hidden rounded-[1.6rem] glass card-frame p-6 sm:p-7";
 const cardTitle = "font-display text-[1.55rem] font-semibold leading-tight text-jade-deep";
@@ -71,7 +73,8 @@ export default function LiveSystem() {
 
   const trades = useMemo(() => {
     const rows = data?.trades ?? [];
-    return unpaidOnly ? rows.filter((r) => r.status === "pending" || r.status === "partial") : rows;
+    const filtered = unpaidOnly ? rows.filter((r) => r.status === "pending" || r.status === "partial") : rows;
+    return filtered.slice(0, VISIBLE_TRADES);
   }, [data, unpaidOnly]);
 
   const unpaidTotals = useMemo(() => {
@@ -135,7 +138,7 @@ export default function LiveSystem() {
 
             <h4 className="relative mt-6 font-display text-xl font-semibold text-jade-deep">{t("live.latestProviders")}</h4>
             <ol className="relative mt-3 space-y-3">
-              {isLoading && [0, 1, 2].map((i) => <li key={i}><Skeleton className="h-10" /></li>)}
+              {isLoading && Array.from({ length: 8 }, (_, i) => <li key={i}><Skeleton className="h-10" /></li>)}
               {!isLoading && providers === null && <li className="text-sm text-muted-foreground">—</li>}
               {!isLoading && providers !== null && providers.length === 0 && (
                 <li className="text-sm text-muted-foreground">{t("live.noProviders")}</li>
@@ -176,8 +179,8 @@ export default function LiveSystem() {
               </div>
             </div>
 
-            <div className="scroll-thin relative mt-4 max-h-[480px] flex-1 overflow-y-auto pr-1">
-              {isLoading && <div className="space-y-2">{Array.from({ length: 8 }, (_, i) => <Skeleton key={i} className="h-9" />)}</div>}
+            <div className="relative mt-4 flex-1">
+              {isLoading && <div className="space-y-2">{Array.from({ length: VISIBLE_TRADES }, (_, i) => <Skeleton key={i} className="h-9" />)}</div>}
               {!isLoading && trades.length === 0 && (
                 <p className="py-10 text-center text-sm text-muted-foreground">
                   {data?.trades === null ? t("live.error") : unpaidOnly ? t("live.trades.emptyUnpaid") : t("live.trades.empty")}

@@ -35,7 +35,6 @@ export default function SiteFooter() {
               <li><AnchorLink className={link} to="dogodki">{t("footer.events")}</AnchorLink></li>
               <li><AnchorLink className={link} to="trgovine">{t("footer.shops")}</AnchorLink></li>
               <li><AnchorLink className={link} to="bef">{t("footer.bef")}</AnchorLink></li>
-              <li><AnchorLink className={link} to="novice">{t("footer.posts")}</AnchorLink></li>
               <li><Link className={link} to="/learn-more">{t("hero.cta.learn")}</Link></li>
             </ul>
           </div>

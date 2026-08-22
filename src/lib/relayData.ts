@@ -119,40 +119,6 @@ export function fetchMerchantsFromRelays(): Promise<MerchantUnit[]> {
   });
 }
 
-// ── Post types ──
-
-export interface Post {
-  id: number;
-  title: string;
-  body: string;
-  youtube_url: string;
-  types: string[];
-  language: string;
-  created_at: number;
-}
-
-export const POST_TYPE_COLORS: Record<string, string> = {
-  FAQ: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400',
-  INSTRUCTIONS: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
-  NEWS: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400',
-  PHILOSOPHY: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400',
-  'PAST EVENTS': 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400',
-};
-
-export const POST_TYPE_LABELS: Record<string, Record<string, string>> = {
-  FAQ: { en: 'FAQ', sl: 'FAQ' },
-  INSTRUCTIONS: { en: 'Instructions', sl: 'Navodila' },
-  NEWS: { en: 'News', sl: 'Novice' },
-  PHILOSOPHY: { en: 'Philosophy', sl: 'Filozofija' },
-  'PAST EVENTS': { en: 'Past Events', sl: 'Pretekli dogodki' },
-};
-
-export function getYoutubeEmbedUrl(url: string): string | null {
-  if (!url) return null;
-  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/);
-  return match ? `https://www.youtube.com/embed/${match[1]}` : null;
-}
-
 // ── LanaEvent types ──
 
 export interface ScheduleEntry {

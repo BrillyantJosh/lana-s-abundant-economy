@@ -8,7 +8,6 @@ import ServiceCard from "@/components/ServiceCard";
 import EventsSection from "@/components/EventsSection";
 import WhereToBuy from "@/components/WhereToBuy";
 import BefCard from "@/components/BefCard";
-import PostsSection from "@/components/PostsSection";
 import SiteFooter from "@/components/SiteFooter";
 import { useHashScroll } from "@/components/AnchorLink";
 
@@ -87,7 +86,6 @@ const Index = () => {
             <EventsSection />
             <WhereToBuy />
             <BefCard />
-            <PostsSection />
           </div>
         </section>
 

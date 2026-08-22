@@ -42,7 +42,7 @@ const translations = {
   'live.split': { en: 'Current Split', sl: 'Trenutni Split' },
   'live.days': { en: 'Days in this Split', sl: 'Dni v tem Splitu' },
   'live.providers': { en: 'Total providers', sl: 'Skupno ponudnikov' },
-  'live.latestProviders': { en: 'Three most recently registered providers', sl: 'Zadnji trije vpisani ponudniki' },
+  'live.latestProviders': { en: 'Recently registered providers', sl: 'Zadnji vpisani ponudniki' },
   'live.registered': { en: 'registered {ago}', sl: 'vpisan {ago}' },
   'live.noProviders': { en: 'There are currently no newly registered providers.', sl: 'Trenutno ni novih registriranih ponudnikov.' },
   'live.trades.title': { en: 'Latest trades in the Split', sl: 'Zadnji trejdi v Splitu' },
@@ -167,7 +167,6 @@ const translations = {
   'bef.kicker': { en: 'The framework', sl: 'Okvir' },
   'events.kicker': { en: 'Community', sl: 'Skupnost' },
   'shops.kicker': { en: 'Network', sl: 'Omrežje' },
-  'posts.kicker': { en: 'Editorial', sl: 'Uredništvo' },
   'bef.title': { en: 'What is the system built on?', sl: 'Na kakšni podlagi deluje sistem?' },
   'bef.intro': {
     en: 'The Balanced Exchange Framework (BEF) is the overarching operational and transparency framework of the Balanced Economy of Abundance. LANA is its first and reference implementation. BEF is not a coin, an exchange or an investment product — it is a framework in which different forms of value can coexist and remain in balance.',
@@ -213,15 +212,6 @@ const translations = {
   },
   'bef.cta': { en: 'Read the full framework', sl: 'Preberi celoten okvir' },
   'bef.version': { en: 'Framework version {v} · {date}', sl: 'Verzija okvira {v} · {date}' },
-
-  // Posts / News
-  'posts.title': { en: 'News & Guides', sl: 'Novice & Navodila' },
-  'posts.subtitle': { en: 'Instructions, answers and announcements from the editorial team.', sl: 'Navodila, odgovori in objave uredništva.' },
-  'posts.loading': { en: 'Loading posts …', sl: 'Nalagam objave …' },
-  'posts.empty': { en: 'No posts yet.', sl: 'Ni še objav.' },
-  'posts.readMore': { en: 'Read more', sl: 'Preberi več' },
-  'posts.watchVideo': { en: 'Watch video', sl: 'Oglej si video' },
-  'posts.filterAll': { en: 'All', sl: 'Vse' },
 
   // III. Technical solutions
   'tech.kicker': { en: 'III. Technical solutions', sl: 'III. Tehnične rešitve' },
@@ -309,7 +299,6 @@ const translations = {
   'footer.events': { en: 'Events', sl: 'Dogodki' },
   'footer.shops': { en: 'Where can I buy?', sl: 'Kje lahko kupujem?' },
   'footer.bef': { en: 'The framework (BEF)', sl: 'Okvir (BEF)' },
-  'footer.posts': { en: 'News & Guides', sl: 'Novice & Navodila' },
   'footer.admin': { en: 'Editorial', sl: 'Uredništvo' },
   'footer.copy': { en: '© 2026 Economy of Abundance. All rights reserved.', sl: '© 2026 Ekonomija Obilja. Vse pravice pridržane.' },
 
