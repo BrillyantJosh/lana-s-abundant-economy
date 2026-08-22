@@ -8,6 +8,7 @@ import { scrollToId } from "./AnchorLink";
 import heroWebp from "@/assets/hero-lotus.webp";
 import heroMobile from "@/assets/hero-lotus-mobile.webp";
 import heroJpg from "@/assets/hero-lotus.jpg";
+import heroMotion from "@/assets/hero-lotus-motion.mp4";
 
 const rise = (delay: number) => ({
   initial: { opacity: 0, y: 22 },
@@ -20,7 +21,19 @@ export default function Hero() {
 
   return (
     <section id="top" className="relative flex min-h-[92svh] w-full flex-col overflow-hidden sm:min-h-[88vh]">
-      <picture className="absolute inset-0">
+      <video
+        className="absolute inset-0 hidden h-full w-full object-cover object-[50%_45%] sm:block sm:object-[50%_55%] motion-reduce:hidden"
+        autoPlay
+        loop
+        muted
+        playsInline
+        poster={heroJpg}
+        aria-hidden="true"
+      >
+        <source src={heroMotion} type="video/mp4" />
+      </video>
+
+      <picture className="absolute inset-0 sm:motion-safe:hidden">
         <source media="(max-width: 640px)" srcSet={heroMobile} type="image/webp" />
         <source srcSet={heroWebp} type="image/webp" />
         <img
