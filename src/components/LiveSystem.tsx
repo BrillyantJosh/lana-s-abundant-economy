@@ -14,6 +14,7 @@ import {
   type TradeStatus,
 } from "@/lib/connects";
 import Mandala from "./Mandala";
+import lanaLogo from "@/assets/lana-logo.png";
 
 const YOUTUBE_ID = "IvMjsdfQ4Kc";
 /** Rows shown in the trades card; the filter still runs over the full feed from the server. */
@@ -195,7 +196,18 @@ export default function LiveSystem() {
                         tr.status === "paid" ? "bg-jade" : tr.status === "partial" ? "bg-lotus-deep" : tr.status === "failed" ? "bg-red-500" : "bg-gold"
                       }`} aria-hidden="true" />
                       <span className="truncate font-bold text-foreground">{tr.merchant}</span>
-                      <span className="whitespace-nowrap font-display text-base font-semibold text-jade-deep sm:text-right">{formatMoney(tr.amount, tr.currency, lang)}</span>
+                      <span className="flex items-center justify-end gap-1.5 whitespace-nowrap">
+                        {tr.paymentType === "lana" && (
+                          <img
+                            src={lanaLogo}
+                            alt={t("live.trades.paidWithLana")}
+                            title={t("live.trades.paidWithLana")}
+                            className="h-[18px] w-[18px] shrink-0"
+                            loading="lazy"
+                          />
+                        )}
+                        <span className="font-display text-base font-semibold text-jade-deep">{formatMoney(tr.amount, tr.currency, lang)}</span>
+                      </span>
                       <span className={`status-pill status-${tr.status} col-start-3 justify-self-start sm:col-start-auto lg:col-start-3`}>{statusLabel[tr.status]}</span>
                       <time className="col-start-4 whitespace-nowrap text-right text-xs text-muted-foreground sm:col-start-auto lg:col-start-4">{timeAgo(tr.createdAt, lang)}</time>
                     </li>

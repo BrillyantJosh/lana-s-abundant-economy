@@ -14,7 +14,7 @@ const translations = {
   // Hero
   'hero.kicker': { en: 'Economy of Abundance', sl: 'Ekonomija Obilja' },
   'hero.title': { en: 'Together we build the Economy of Abundance', sl: 'Gradimo skupaj Ekonomijo Obilja' },
-  'hero.tagline': { en: '… and we have a good time :)', sl: '… in se mamo fajn :)' },
+  'hero.tagline': { en: "Let's have some Fun", sl: 'Mejmo Se fajn' },
   'hero.lead': {
     en: 'A payment system that gives back more than it takes: the merchant receives the full invoice plus up to 20% on top, the customer gets LANA back, and investors finance real, local and ecological consumption.',
     sl: 'Plačilni sistem, ki vrne več, kot vzame: trgovec prejme celoten račun in do 20 % nagrade povrhu, kupec prejme LANO nazaj, vlagatelji pa financirajo resnično, lokalno in ekološko potrošnjo.',
@@ -50,6 +50,7 @@ const translations = {
   'live.trades.showAll': { en: 'Show all trades', sl: 'Prikaži vse trejde' },
   'live.trades.viewAll': { en: 'View all 100 trades', sl: 'Poglej vseh 100 trejdov' },
   'live.trades.unpaidTotal': { en: 'Total unpaid', sl: 'Skupaj neplačano' },
+  'live.trades.paidWithLana': { en: 'Paid with LANA', sl: 'Plačano z LANO' },
   'live.trades.empty': { en: 'No trades to show right now.', sl: 'Trenutno ni prikazanih trejdov.' },
   'live.trades.emptyUnpaid': { en: 'No unpaid trades right now.', sl: 'Trenutno ni neplačanih trejdov.' },
   'live.status.pending': { en: 'IN PROGRESS', sl: 'V TEKU' },
@@ -284,7 +285,7 @@ const translations = {
   'notfound.back': { en: 'Return to Home', sl: 'Nazaj na domačo stran' },
 
   // Footer
-  'footer.tagline': { en: 'Together we build the Economy of Abundance — and have a good time :)', sl: 'Gradimo skupaj Ekonomijo Obilja – in se mamo fajn :)' },
+  'footer.tagline': { en: "Together we build the Economy of Abundance — let's have some Fun", sl: 'Gradimo skupaj Ekonomijo Obilja – Mejmo Se fajn' },
   'footer.col.pillars': { en: 'Services', sl: 'Sklopi' },
   'footer.col.more': { en: 'More', sl: 'Več' },
   'footer.col.tech': { en: 'Technical solutions', sl: 'Tehnične rešitve' },
