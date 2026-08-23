@@ -5,6 +5,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import Mandala from "./Mandala";
 import { LotusGlyph } from "./LotusDivider";
 import { scrollToId } from "./AnchorLink";
+import { usePathDialogs } from "./PathDialogs";
 import heroWebp from "@/assets/hero-lotus.webp";
 import heroMobile from "@/assets/hero-lotus-mobile.webp";
 import heroJpg from "@/assets/hero-lotus.jpg";
@@ -17,7 +18,8 @@ const rise = (delay: number) => ({
 });
 
 export default function Hero() {
-  const { lang, t } = useLanguage();
+  const { t } = useLanguage();
+  const { openRegister, openLogin } = usePathDialogs();
 
   return (
     <section id="top" className="relative flex min-h-[92svh] w-full flex-col overflow-hidden sm:min-h-[88vh]">
@@ -72,12 +74,12 @@ export default function Hero() {
             {t("hero.lead")}
           </motion.p>
           <motion.div {...rise(0.52)} className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <a href={`https://shop.lanapays.us/welcome?lang=${lang}`} className="btn btn-jade w-full sm:w-auto">
+            <button type="button" onClick={openRegister} className="btn btn-jade w-full sm:w-auto">
               {t("hero.cta.register")}
-            </a>
-            <a href="https://mobile.lanapays.us" className="btn btn-gold w-full sm:w-auto">
+            </button>
+            <button type="button" onClick={openLogin} className="btn btn-gold w-full sm:w-auto">
               {t("hero.cta.login")}
-            </a>
+            </button>
           </motion.div>
           <motion.div {...rise(0.62)} className="mt-5">
             <Link to="/learn-more" className="font-body text-sm font-bold text-jade-deep/80 underline decoration-gold/60 underline-offset-4 transition-colors hover:text-gold-deep">

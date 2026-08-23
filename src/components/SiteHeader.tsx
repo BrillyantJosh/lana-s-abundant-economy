@@ -3,6 +3,7 @@ import { Menu, X } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { LotusGlyph } from "./LotusDivider";
 import AnchorLink from "./AnchorLink";
+import { usePathDialogs } from "./PathDialogs";
 
 interface Props {
   /** true on the landing page: transparent over the hero, frosted after scrolling */
@@ -11,6 +12,7 @@ interface Props {
 
 export default function SiteHeader({ overHero = false }: Props) {
   const { lang, setLang, t } = useLanguage();
+  const { openRegister, openLogin } = usePathDialogs();
   const [scrolled, setScrolled] = useState(!overHero);
   const [open, setOpen] = useState(false);
 
@@ -80,9 +82,9 @@ export default function SiteHeader({ overHero = false }: Props) {
               </button>
             ))}
           </div>
-          <a href="https://mobile.lanapays.us" className="btn btn-gold hidden !px-5 !py-2 text-xs sm:inline-flex">
+          <button type="button" onClick={openLogin} className="btn btn-gold hidden !px-5 !py-2 text-xs sm:inline-flex">
             {t("header.login")}
-          </a>
+          </button>
           <button
             type="button"
             className="flex h-10 w-10 items-center justify-center rounded-full border border-gold/30 bg-white/50 text-jade-deep md:hidden"
@@ -112,8 +114,8 @@ export default function SiteHeader({ overHero = false }: Props) {
             ))}
           </ul>
           <div className="mt-3 flex gap-2">
-            <a href={`https://shop.lanapays.us/welcome?lang=${lang}`} className="btn btn-jade flex-1 !py-2.5 text-xs">{t("header.register")}</a>
-            <a href="https://mobile.lanapays.us" className="btn btn-gold flex-1 !py-2.5 text-xs">{t("header.login")}</a>
+            <button type="button" onClick={() => { setOpen(false); openRegister(); }} className="btn btn-jade flex-1 !py-2.5 text-xs">{t("header.register")}</button>
+            <button type="button" onClick={() => { setOpen(false); openLogin(); }} className="btn btn-gold flex-1 !py-2.5 text-xs">{t("header.login")}</button>
           </div>
         </nav>
       )}

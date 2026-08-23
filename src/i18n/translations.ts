@@ -242,15 +242,74 @@ const translations = {
   'tech.feed.b3': { en: 'Offers signed in the browser, never by the server', sl: 'Ponudbe podpiše brskalnik, nikoli strežnik' },
   'tech.feed.cta': { en: 'Open Lana Feed', sl: 'Odpri Lana Feed' },
   'tech.fund.name': { en: 'LanaFund.Me', sl: 'LanaFund.Me' },
-  'tech.fund.tag': { en: 'Scan a key, get paid', sl: 'Skeniraj ključ, prejmi plačilo' },
+  'tech.fund.tag': { en: 'Paying out unconditional funding', sl: 'Izplačilo brezpogojnega financiranja' },
   'tech.fund.desc': {
-    en: 'No login and no approval to wait for: scan your card, enter your payout details and accept LANA payments. The amount lands on your bank account within three days and a 3% reward arrives in LANA on the scanned card. Made for one-off sales, events and everything that needs no permanent till.',
-    sl: 'Brez prijave in brez čakanja na odobritev: skeniraš kartico, vneseš podatke za izplačilo in sprejemaš plačila v LANI. Znesek prejmeš na račun v treh dneh, 3 % nagrade pa v LANI na skenirano kartico. Za enkratne prodaje, dogodke in vse, kar ne potrebuje stalne blagajne.',
+    en: 'This is not a till: only funds that came in as the new form of unconditional funding can be paid out here — not ordinary sales revenue. No login and no approval to wait for: scan your card, enter your payout details and receive what was given. The amount lands on your bank account within three days and a 3% reward arrives in LANA on the scanned card.',
+    sl: 'To ni blagajna: prek nje se lahko izplačajo SAMO sredstva, ki so prišla kot nova oblika brezpogojnega financiranja — ne pa prihodek od običajne prodaje. Brez prijave in brez čakanja na odobritev: skeniraš kartico, vneseš podatke za izplačilo in prejmeš, kar ti je bilo podarjeno. Znesek prejmeš na račun v treh dneh, 3 % nagrade pa v LANI na skenirano kartico.',
   },
-  'tech.fund.b1': { en: 'Two scans — register and receive', sl: 'Dva skena – registracija in prejem' },
-  'tech.fund.b2': { en: 'Payout to the bank within 3 days', sl: 'Izplačilo na banko v 3 dneh' },
-  'tech.fund.b3': { en: 'Remote payment request by link', sl: 'Zahtevek za plačilo na daljavo' },
+  'tech.fund.b1': { en: 'Only unconditional funding, never a sale', sl: 'Samo brezpogojno financiranje, nikoli prodaja' },
+  'tech.fund.b2': { en: 'Two scans — register and receive', sl: 'Dva skena – registracija in prejem' },
+  'tech.fund.b3': { en: 'Payout to the bank within 3 days', sl: 'Izplačilo na banko v 3 dneh' },
   'tech.fund.cta': { en: 'Open LanaFund.Me', sl: 'Odpri LanaFund.Me' },
+
+  // Register / login choice dialogs
+  'choose.approval.auto': { en: 'Automatic approval', sl: 'Samodejna odobritev' },
+  'choose.approval.review': { en: 'Detailed review', sl: 'Podroben pregled' },
+
+  'choose.reg.title': { en: 'What would you like to register?', sl: 'Kaj želiš registrirati?' },
+  'choose.reg.subtitle': {
+    en: 'Three doors, one economy. Pick the one that fits what you do.',
+    sl: 'Trije vhodi, ena ekonomija. Izberi tistega, ki ustreza tvoji dejavnosti.',
+  },
+  'choose.reg.simple.name': { en: 'Simple — a classic business', sl: 'Simple — klasična dejavnost' },
+  'choose.reg.simple.lead': {
+    en: 'Any business that wants to start today: scan your card, enter your business and bank details.',
+    sl: 'Vsaka dejavnost, ki želi začeti danes: skeniraš kartico, vpišeš dejavnost in bančni račun.',
+  },
+  'choose.reg.simple.reward': { en: 'Reward 2–5%', sl: 'Nagrada 2–5 %' },
+  'choose.reg.simple.payment': { en: 'Payment in LANA only', sl: 'Plačilo samo z LANO' },
+
+  'choose.reg.obilje.name': { en: 'Abundance — organic, local, one of a kind', sl: 'Obilje — organsko, lokalno, unikatno' },
+  'choose.reg.obilje.lead': {
+    en: 'For producers and providers who give quality: organic, local, unique, made with care.',
+    sl: 'Za pridelovalce in ponudnike, ki dajejo kakovost: organsko, lokalno, unikatno, narejeno s srcem.',
+  },
+  'choose.reg.obilje.reward': { en: 'Reward 5–20%', sl: 'Nagrada 5–20 %' },
+  'choose.reg.obilje.payment': { en: 'Payment in cash or LANA', sl: 'Plačilo z gotovino ali LANO' },
+  'choose.reg.obilje.hint': {
+    en: 'The review takes time — start with Simple and upgrade to Abundance later.',
+    sl: 'Pregled traja — začni s Simple in se pozneje nadgradi v Obilje.',
+  },
+
+  'choose.reg.online.name': { en: 'Online shop', sl: 'Spletna trgovina' },
+  'choose.reg.online.lead': {
+    en: "Add a “Pay with LanaPay” button to the online shop you already run.",
+    sl: 'Obstoječi spletni trgovini dodaš gumb »Plačaj z LanaPay«.',
+  },
+  'choose.reg.online.reward': { en: 'Reward 2–5% to start', sl: 'Za začetek nagrada 2–5 %' },
+  'choose.reg.online.payment': { en: 'Payment in LANA only', sl: 'Plačilo samo z LANO' },
+
+  'choose.reg.note': {
+    en: 'Simple and the online shop approve themselves — you are selling within minutes. Abundance goes through a detailed review, so the quickest way in is to start with Simple and upgrade afterwards.',
+    sl: 'Simple in spletna trgovina se odobrita sama — prodajaš v nekaj minutah. Obilje gre skozi podroben postopek, zato je najhitrejša pot: začni s Simple in se nato nadgradi.',
+  },
+
+  'choose.log.title': { en: 'Where would you like to log in?', sl: 'Kam se želiš prijaviti?' },
+  'choose.log.subtitle': {
+    en: 'Every service has its own sign-in — always with the same Lana card.',
+    sl: 'Vsaka storitev ima svojo prijavo — vedno z isto Lana kartico.',
+  },
+  'choose.log.simple.name': { en: 'Simple', sl: 'Simple' },
+  'choose.log.simple.lead': { en: 'The till for cashless LANA sales.', sl: 'Blagajna za prodajo v LANI, brez gotovine.' },
+  'choose.log.mobile.name': { en: 'Economy of Abundance', sl: 'Ekonomija Obilja' },
+  'choose.log.mobile.lead': { en: 'The mobile till: cash and LANA, remote payments.', sl: 'Mobilna blagajna: gotovina in LANA, plačilo na daljavo.' },
+  'choose.log.online.name': { en: 'LanaPay — online shop', sl: 'LanaPay — spletna trgovina' },
+  'choose.log.online.lead': { en: 'Dashboard: API keys, webhooks, payment links.', sl: 'Nadzorna plošča: ključi, webhooki, plačilne povezave.' },
+  'choose.log.extra': { en: 'Extra tools', sl: 'Dodatna orodja' },
+  'choose.log.feed.name': { en: 'Lana Feed', sl: 'Lana Feed' },
+  'choose.log.feed.lead': { en: 'Bulk import of your product catalogue.', sl: 'Masovni uvoz kataloga izdelkov.' },
+  'choose.log.pos.name': { en: 'LanaPay POS', sl: 'LanaPay POS' },
+  'choose.log.pos.lead': { en: 'Connecting a physical till and ERP.', sl: 'Povezava fizične blagajne in ERP.' },
 
   // Shared
   'common.open': { en: 'Open', sl: 'Odpri' },

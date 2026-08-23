@@ -30,7 +30,8 @@ from a sale.
 ## Technical solutions
 - https://pos.lanapays.us — LanaPay POS: server-to-server API for physical tills (llms.txt available).
 - https://feed.lanapays.us — Lana Feed: bulk catalogue import (llms.txt available).
-- https://lanafund.me — LanaFund.Me: scan a key, register a unit and accept LANA payments, payout in 3 days.
+- https://lanafund.me — LanaFund.Me: pays out funds received as the new form of unconditional funding
+  (NOT ordinary sales revenue): scan a key, register a unit, principal to the bank in 3 days, 3% reward in LANA.
 
 ## Other endpoints
 - https://lanapays.us/api/posts?lang=sl|en — editorial posts (news, instructions, FAQ).
