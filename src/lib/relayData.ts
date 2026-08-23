@@ -99,6 +99,9 @@ export function fetchMerchantsFromRelays(): Promise<MerchantUnit[]> {
       const status = get('status') || 'active';
       const name = get('name');
       if (status !== 'active' || !name || images.length === 0) continue;
+      // KIND 30901 v1.1.0: payout-only units (LanaFund.Me) are not storefronts — the spec says
+      // portals must not list them. Here the raw tag is available, so match on it directly.
+      if (get('unit_type').trim().toLowerCase() === 'lanafund.me') continue;
       const unitId = get('unit_id') || get('d') || '';
       // Single source of truth: only merchants the admin flagged featured:true (and active) via KIND 30903
       if (!unitId || !featuredIds.has(unitId)) continue;

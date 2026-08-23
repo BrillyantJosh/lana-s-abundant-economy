@@ -184,6 +184,12 @@ function absoluteUrl(v) {
   return url;
 }
 
+// KIND 30901 v1.1.0 (lananostr.site): units carrying unit_type='lanafund.me' are simplified
+// payout units (scan card -> payout details -> accept LANA), NOT merchant storefronts, and the
+// spec says portals must not list them. thelana.life does not expose unit_type, but LanaFund.Me
+// stamps category='LanaFund.Me' on every unit it registers, so that is the marker we have.
+const isPayoutOnlyUnit = p => String(p.category || '').trim().toLowerCase() === 'lanafund.me';
+
 // Same status rule as lanaconnects.us: direct-fund deal state wins, then the brain trade status.
 function tradeStatus(trade, deal) {
   if (deal && (deal.fully_paid || deal.status === 'paid')) return 'paid';
@@ -198,7 +204,9 @@ function buildOverview({ dashboard, providers, trades, deals, stats, bef }) {
   const splitDays = started ? Math.max(0, Math.floor((Date.now() / 1000 - started) / 86400)) : null;
 
   // Providers: lanaconnects.us counts every provider but lists only those with a registration date.
-  const named = (providers || []).filter(p => normalizeText(p.name));
+  // Payout-only units are dropped from BOTH the list and the count — they are not providers.
+  const storefronts = (providers || []).filter(p => !isPayoutOnlyUnit(p));
+  const named = storefronts.filter(p => normalizeText(p.name));
   const latestProviders = providers === null ? null : named
     .filter(p => Number(p.registeredAt || 0) > 0)
     .sort((a, b) => (Number(b.registeredAt || 0) - Number(a.registeredAt || 0)) || (Number(b.created_at || 0) - Number(a.created_at || 0)))
@@ -272,7 +280,7 @@ function buildOverview({ dashboard, providers, trades, deals, stats, bef }) {
     split,
     splitStartedAt: started || null,
     splitDays,
-    providersCount: providers === null ? null : providers.length,
+    providersCount: providers === null ? null : storefronts.length,
     latestProviders,
     trades: tradeRows,
     funding: { waitingEur, byCurrency, investors, lanaInCirculation, distributionEur, rateEur },
