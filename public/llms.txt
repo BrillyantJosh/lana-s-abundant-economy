@@ -5,7 +5,7 @@
 
 LanaPays.Us is the hub of the LANA payment services. A merchant receives the
 full invoice plus a reward on top (2% standard, 5% with Lana8Wonder, up to 20%
-in the Abundance model), the customer gets LANA back, and investors on
+in the Abundance model), the customer gets LANA back, and co-creators on
 direct.lana.fund finance real, local consumption. LanaPays deducts nothing
 from a sale.
 

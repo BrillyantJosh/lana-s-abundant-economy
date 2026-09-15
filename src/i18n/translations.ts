@@ -16,8 +16,8 @@ const translations = {
   'hero.title': { en: 'Together we build the Economy of Abundance', sl: 'Gradimo skupaj Ekonomijo Obilja' },
   'hero.tagline': { en: "Let's have some Fun", sl: 'Mejmo Se fajn' },
   'hero.lead': {
-    en: 'A payment system that gives back more than it takes: the merchant receives the full invoice plus up to 20% on top, the customer gets LANA back, and investors finance real, local and ecological consumption.',
-    sl: 'Plačilni sistem, ki vrne več, kot vzame: trgovec prejme celoten račun in do 20 % nagrade povrhu, kupec prejme LANO nazaj, vlagatelji pa financirajo resnično, lokalno in ekološko potrošnjo.',
+    en: 'A payment system that gives back more than it takes: the merchant receives the full invoice plus up to 20% on top, the customer gets LANA back, and co-creators finance real, local and ecological consumption.',
+    sl: 'Plačilni sistem, ki vrne več, kot vzame: trgovec prejme celoten račun in do 20 % nagrade povrhu, kupec prejme LANO nazaj, ko-kreatorji pa financirajo resnično, lokalno in ekološko potrošnjo.',
   },
   'hero.cta.register': { en: 'Register your business', sl: 'Registriraj dejavnost' },
   'hero.cta.login': { en: 'Open the till', sl: 'Prijava v blagajno' },
@@ -58,7 +58,7 @@ const translations = {
   'live.status.partial': { en: 'PARTIAL', sl: 'DELNO' },
   'live.status.failed': { en: 'FAILED', sl: 'NEUSPELO' },
   'live.funding.title': { en: 'Waiting for investment', sl: 'Čaka na vlaganje' },
-  'live.funding.investors': { en: '{n} active investors', sl: '{n} aktivnih vlagateljev' },
+  'live.funding.investors': { en: '{n} active co-creators', sl: '{n} aktivnih ko-kreatorjev' },
   'live.funding.circulation': { en: 'LANA in circulation', sl: 'Znesek LANA v obtoku' },
   'live.funding.distribution': { en: 'Indicative amount for distribution', sl: 'Okvirni znesek za distribucijo' },
   'live.funding.split': { en: '20% donation · 80% to holders', sl: '20 % donacija · 80 % imetnikom' },
@@ -66,7 +66,7 @@ const translations = {
     en: 'Funds awaiting new projects and providers in this Split.',
     sl: 'Sredstva, ki čakajo na nove projekte in ponudnike v tem Splitu.',
   },
-  'live.funding.invest': { en: 'Become an investor', sl: 'Postani vlagatelj' },
+  'live.funding.invest': { en: 'Become a co-creator', sl: 'Postani ko-kreator' },
   'live.video.title': { en: 'How are trades financed?', sl: 'Kako se financirajo posli?' },
   'live.video.text': {
     en: 'Watch a short video on how the Economy of Abundance creates financial support for fair, ecological and sustainable trade.',
@@ -191,8 +191,8 @@ const translations = {
   },
   'bef.flow.title': { en: 'LanaPays.us inside the framework', sl: 'LanaPays.us znotraj okvira' },
   'bef.flow.text': {
-    en: 'LanaPays.us is the circulation pillar of Exchange: real consumption between customers and merchants, the capital input of direct.lana.fund that finances it, and the treasury recirculation of lana.discount. The customer pays exactly the invoice; the merchant receives the full amount plus a reward (2%, 5% or up to 20% in the Abundance model) funded by the investor — LanaPays deducts nothing from a sale.',
-    sl: 'LanaPays.us je steber kroženja v Exchangeu: resnična potrošnja med kupci in trgovci, kapitalski vložek direct.lana.fund, ki jo financira, in zakladniška recirkulacija lana.discount. Kupec plača točno toliko, kot piše na računu; trgovec prejme celoten znesek in nagrado (2 %, 5 % ali do 20 % v modelu obilja), ki jo financira vlagatelj – LanaPays od prodaje ne odbije ničesar.',
+    en: 'LanaPays.us is the circulation pillar of Exchange: real consumption between customers and merchants, the capital input of direct.lana.fund that finances it, and the treasury recirculation of lana.discount. The customer pays exactly the invoice; the merchant receives the full amount plus a reward (2%, 5% or up to 20% in the Abundance model) funded by the co-creator — LanaPays deducts nothing from a sale.',
+    sl: 'LanaPays.us je steber kroženja v Exchangeu: resnična potrošnja med kupci in trgovci, kapitalski vložek direct.lana.fund, ki jo financira, in zakladniška recirkulacija lana.discount. Kupec plača točno toliko, kot piše na računu; trgovec prejme celoten znesek in nagrado (2 %, 5 % ali do 20 % v modelu obilja), ki jo financira ko-kreator – LanaPays od prodaje ne odbije ničesar.',
   },
   'bef.principles.title': { en: 'Principles', sl: 'Načela' },
   'bef.p1': {
@@ -335,8 +335,8 @@ const translations = {
   },
   'learn.financing.title': { en: 'Consumer Financing', sl: 'Financiranje potrošnje' },
   'learn.financing.content': {
-    en: 'The Economy of Abundance is a living financial mechanism that happens in cycles similar to inhaling and exhaling. This economy grows organically and extremely stably, which is why it also enables stable returns for investors. People who educate themselves about the workings of this system can participate in financing.',
-    sl: 'Ekonomija Obilja je živo finančno kolesje, ki se dogaja v ciklih, podobnih vdihu in izdihu. Ta ekonomija raste organsko in izjemno stabilno, zato tudi omogoča stabilne donose za vlagatelje. Pri financiranju lahko sodelujejo ljudje, ki se podučijo o delovanju tega sistema.',
+    en: 'The Economy of Abundance is a living financial mechanism that happens in cycles similar to inhaling and exhaling. This economy grows organically and extremely stably, which is why it also enables stable returns for co-creators. People who educate themselves about the workings of this system can participate in financing.',
+    sl: 'Ekonomija Obilja je živo finančno kolesje, ki se dogaja v ciklih, podobnih vdihu in izdihu. Ta ekonomija raste organsko in izjemno stabilno, zato tudi omogoča stabilne donose za ko-kreatorje. Pri financiranju lahko sodelujejo ljudje, ki se podučijo o delovanju tega sistema.',
   },
 
   // 404
@@ -350,7 +350,7 @@ const translations = {
   'footer.col.tech': { en: 'Technical solutions', sl: 'Tehnične rešitve' },
   'footer.col.eco': { en: 'Ecosystem', sl: 'Ekosistem' },
   'footer.eco.connects': { en: 'LanaConnects.us — live system', sl: 'LanaConnects.us – sistem v živo' },
-  'footer.eco.direct': { en: 'direct.lana.fund — investors', sl: 'direct.lana.fund – vlagatelji' },
+  'footer.eco.direct': { en: 'direct.lana.fund — co-creators', sl: 'direct.lana.fund – ko-kreatorji' },
   'footer.eco.shop': { en: 'shop.lanapays.us — business units', sl: 'shop.lanapays.us – poslovne enote' },
   'footer.eco.discount': { en: 'lana.discount — treasury', sl: 'lana.discount – zakladnica' },
   'footer.eco.wonder': { en: 'Lana8Wonder — personal balance', sl: 'Lana8Wonder – osebno ravnovesje' },
