@@ -4,6 +4,7 @@ const path = require('path');
 const WebSocket = require('ws');
 const Database = require('better-sqlite3');
 const fs = require('fs');
+const { simpleUnitKeys, selectStorefronts } = require('./unitOrigin.cjs');
 
 const app = express();
 
@@ -16,10 +17,13 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
+// The four relays of KIND 38888 (d=main). relay.lanacoin-eternity.com was an old alias of
+// relay.lana-eternity.com and is not in 38888.
 const RELAYS = [
   'wss://relay.lanavault.space',
-  'wss://relay.lanacoin-eternity.com',
+  'wss://relay.lana-eternity.com',
   'wss://relay.lanaheartvoice.com',
+  'wss://relay.lovelana.org',
 ];
 
 // ── SQLite setup ──
@@ -184,11 +188,68 @@ function absoluteUrl(v) {
   return url;
 }
 
-// KIND 30901 v1.1.0 (lananostr.site): units carrying unit_type='lanafund.me' are simplified
-// payout units (scan card -> payout details -> accept LANA), NOT merchant storefronts, and the
-// spec says portals must not list them. thelana.life does not expose unit_type, but LanaFund.Me
-// stamps category='LanaFund.Me' on every unit it registers, so that is the marker we have.
-const isPayoutOnlyUnit = p => String(p.category || '').trim().toLowerCase() === 'lanafund.me';
+// ── Simple units: the landing page shows Ekonomija Obilja providers only (unitOrigin.cjs) ──
+// thelana.life does not expose unit_type / lana_only, so we read them from the owners' signed
+// KIND 30901 on the relays. Remembered in SQLite: once Simple, always Simple — also while the
+// relays are unreachable, and after the merchant re-publishes the unit without the tags.
+db.exec('CREATE TABLE IF NOT EXISTS simple_units (unit_key TEXT PRIMARY KEY, first_seen INTEGER DEFAULT (unixepoch()))');
+const knownSimpleUnits = new Set(db.prepare('SELECT unit_key FROM simple_units').all().map(r => r.unit_key));
+const rememberSimpleUnit = db.prepare('INSERT OR IGNORE INTO simple_units (unit_key) VALUES (?)');
+const UNIT_ORIGIN_TIMEOUT_MS = 6000;
+const UNIT_ORIGIN_CHUNK = 200; // a relay answers at most 500 events per REQ
+
+// One socket per relay, one REQ per chunk of unit ids. Never rejects; resolves once every relay
+// has sent EOSE for every chunk or timed out. ok = at least one relay answered completely.
+function fetchUnitEvents(unitIds) {
+  const filters = [];
+  for (let i = 0; i < unitIds.length; i += UNIT_ORIGIN_CHUNK) {
+    filters.push({ kinds: [30901], '#d': unitIds.slice(i, i + UNIT_ORIGIN_CHUNK) });
+  }
+  if (!filters.length) return Promise.resolve({ ok: true, events: [] });
+  return new Promise(resolve => {
+    const events = new Map();
+    let left = RELAYS.length;
+    let complete = 0;
+    for (const url of RELAYS) {
+      const pending = new Set(filters.map((_, i) => `uo${i}`));
+      let ws = null;
+      let settled = false;
+      const settle = ok => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        if (ok) complete++;
+        try { ws && ws.terminate(); } catch {}
+        if (--left === 0) resolve({ ok: complete > 0, events: [...events.values()] });
+      };
+      const timer = setTimeout(() => settle(false), UNIT_ORIGIN_TIMEOUT_MS);
+      try { ws = new WebSocket(url); } catch { settle(false); continue; }
+      ws.on('open', () => filters.forEach((f, i) => ws.send(JSON.stringify(['REQ', `uo${i}`, f]))));
+      ws.on('message', data => {
+        let msg;
+        try { msg = JSON.parse(data); } catch { return; }
+        if (msg[0] === 'EVENT' && pending.has(msg[1]) && msg[2] && msg[2].id) events.set(msg[2].id, msg[2]);
+        else if (msg[0] === 'EOSE' && pending.delete(msg[1]) && pending.size === 0) settle(true);
+        else if (msg[0] === 'CLOSED' && pending.has(msg[1])) settle(false);
+      });
+      ws.on('error', () => settle(false));
+      ws.on('close', () => settle(false));
+    }
+  });
+}
+
+async function lookupSimpleUnits(providers) {
+  const unitIds = [...new Set((providers || []).map(p => normalizeText(p.unit_id)).filter(Boolean))];
+  const { ok, events } = await fetchUnitEvents(unitIds);
+  for (const key of simpleUnitKeys(events)) {
+    if (knownSimpleUnits.has(key)) continue;
+    knownSimpleUnits.add(key);
+    try { rememberSimpleUnit.run(key); } catch (err) { console.warn('[connects] remember simple unit:', err.message); }
+  }
+  // No relay answered: keep going with the remembered Simple units rather than emptying the list.
+  if (!ok) console.warn('[connects] unit origin: no relay answered, using the remembered Simple units');
+  return { checked: ok, keys: knownSimpleUnits };
+}
 
 // Same status rule as lanaconnects.us: direct-fund deal state wins, then the brain trade status.
 function tradeStatus(trade, deal) {
@@ -198,14 +259,15 @@ function tradeStatus(trade, deal) {
   return 'pending';
 }
 
-function buildOverview({ dashboard, providers, trades, deals, stats, bef }) {
+function buildOverview({ dashboard, providers, trades, deals, stats, bef, unitOrigin }) {
   const split = dashboard?.split ?? dashboard?.current_split ?? stats?.split ?? null;
   const started = Number(dashboard?.split_started_at || 0);
   const splitDays = started ? Math.max(0, Math.floor((Date.now() / 1000 - started) / 86400)) : null;
 
   // Providers: lanaconnects.us counts every provider but lists only those with a registration date.
-  // Payout-only units are dropped from BOTH the list and the count — they are not providers.
-  const storefronts = (providers || []).filter(p => !isPayoutOnlyUnit(p));
+  // Payout-only (LanaFund.Me) and Simple units are dropped from BOTH the list and the count:
+  // this page shows Ekonomija Obilja providers only.
+  const { storefronts, hidden } = selectStorefronts(providers, unitOrigin && unitOrigin.keys);
   const named = storefronts.filter(p => normalizeText(p.name));
   const latestProviders = providers === null ? null : named
     .filter(p => Number(p.registeredAt || 0) > 0)
@@ -282,6 +344,7 @@ function buildOverview({ dashboard, providers, trades, deals, stats, bef }) {
     splitDays,
     providersCount: providers === null ? null : storefronts.length,
     latestProviders,
+    hiddenProviders: providers === null ? null : { ...hidden, unitOriginChecked: Boolean(unitOrigin && unitOrigin.checked) },
     trades: tradeRows,
     funding: { waitingEur, byCurrency, investors, lanaInCirculation, distributionEur, rateEur },
     bef: befInfo,
@@ -304,13 +367,16 @@ async function loadConnectsOverview() {
   // A partial outage must not overwrite the last good snapshot with zeros:
   // throw so getConnectsOverview serves the cached data flagged stale.
   if (failed.length && connectsCache.data) throw new Error(`partial outage: ${failed.join(', ')}`);
+  const providers = providersData ? (providersData.providers || []) : null;
+  const unitOrigin = providers ? await lookupSimpleUnits(providers) : null;
   const overview = buildOverview({
     dashboard,
-    providers: providersData ? (providersData.providers || []) : null,
+    providers,
     trades: tradesData ? (tradesData.trades || []) : null,
     deals: dealsData ? (dealsData.transactions || []) : null,
     stats,
     bef,
+    unitOrigin,
   });
   if (failed.length) overview.partial = failed; // no snapshot yet: ship nulls, the UI shows dashes
   return overview;

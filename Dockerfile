@@ -16,7 +16,7 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
-COPY server.cjs ./
+COPY server.cjs unitOrigin.cjs ./
 RUN mkdir -p data
 EXPOSE 3000
 CMD ["node", "server.cjs"]

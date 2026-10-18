@@ -79,6 +79,16 @@ export function fetchFeaturedUnitIds(): Promise<Set<string>> {
   });
 }
 
+/**
+ * True for a KIND 30901 registered through simple.lanapays.us. Simple signs both
+ * ['unit_type','simple.lanapays.us'] and ['lana_only','true']; either one is enough, because
+ * shop's edit form re-publishes the unit without them. Same rule as unitOrigin.cjs (server).
+ */
+export function isSimpleUnitEvent(ev: Pick<RelayEvent, 'tags'>): boolean {
+  const get = (n: string) => String(ev.tags?.find((t: string[]) => t[0] === n)?.[1] ?? '').trim().toLowerCase();
+  return get('unit_type') === 'simple.lanapays.us' || get('lana_only') === 'true';
+}
+
 export function fetchMerchantsFromRelays(): Promise<MerchantUnit[]> {
   return Promise.all([
     queryRelays(30901),
@@ -102,6 +112,8 @@ export function fetchMerchantsFromRelays(): Promise<MerchantUnit[]> {
       // KIND 30901 v1.1.0: payout-only units (LanaFund.Me) are not storefronts — the spec says
       // portals must not list them. Here the raw tag is available, so match on it directly.
       if (get('unit_type').trim().toLowerCase() === 'lanafund.me') continue;
+      // This page shows Ekonomija Obilja providers only — never LanaPays.Us Simple units.
+      if (isSimpleUnitEvent(ev)) continue;
       const unitId = get('unit_id') || get('d') || '';
       // Single source of truth: only merchants the admin flagged featured:true (and active) via KIND 30903
       if (!unitId || !featuredIds.has(unitId)) continue;
