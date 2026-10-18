@@ -11,9 +11,14 @@ from a sale.
 
 ## Live system (reference data from LanaConnects.us)
 - https://lanapays.us/api/connects/overview — current Split, days in the Split,
-  provider count, three most recently registered providers, latest 100 trades
-  with status, funds waiting for investment, LANA in circulation, current BEF
-  framework version. JSON, no auth. Fields are null when their source is down.
+  provider count (all open Economy of Abundance units, counted from the KIND
+  30901/30903 register on the relays; LanaFund.Me payout units, test units and
+  Simple units excluded), eight most recently registered providers, latest 100
+  trades with status, funds waiting for financing, LANA in circulation, current
+  BEF framework version. JSON, no auth. Fields are null when their source is down.
+- https://lanapays.us/api/connects/providers-total — the same register count for
+  the whole network (Simple included) and for the Economy of Abundance, with the
+  breakdown of every exclusion.
   Upstreams: https://thelana.life/api, https://direct.lana.fund/api/public and
   https://balancedexchangeframe.work/api/versions.
 

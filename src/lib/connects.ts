@@ -40,6 +40,8 @@ export interface ConnectsOverview {
   splitStartedAt: number | null;
   splitDays: number | null;
   providersCount: number | null;
+  /** 'register' = every open Ekonomija Obilja unit on the relays; 'recent' = thelana.life's recent list only */
+  providersCountScope?: "register" | "recent" | null;
   latestProviders: ConnectsProvider[] | null;
   trades: ConnectsTrade[] | null;
   funding: ConnectsFunding;

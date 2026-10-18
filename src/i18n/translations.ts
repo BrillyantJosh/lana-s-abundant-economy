@@ -42,6 +42,8 @@ const translations = {
   'live.split': { en: 'Current Split', sl: 'Trenutni Split' },
   'live.days': { en: 'Days in this Split', sl: 'Dni v tem Splitu' },
   'live.providers': { en: 'Total providers', sl: 'Skupno ponudnikov' },
+  // Shown only when the relay register could not be read yet and the count is thelana.life's recent list.
+  'live.providersRecent': { en: 'Recently registered providers', sl: 'Zadnjih vpisanih ponudnikov' },
   'live.latestProviders': { en: 'Recently registered providers', sl: 'Zadnji vpisani ponudniki' },
   'live.registered': { en: 'registered {ago}', sl: 'vpisan {ago}' },
   'live.noProviders': { en: 'There are currently no newly registered providers.', sl: 'Trenutno ni novih registriranih ponudnikov.' },
@@ -57,7 +59,7 @@ const translations = {
   'live.status.paid': { en: 'PAID', sl: 'PLAČANO' },
   'live.status.partial': { en: 'PARTIAL', sl: 'DELNO' },
   'live.status.failed': { en: 'FAILED', sl: 'NEUSPELO' },
-  'live.funding.title': { en: 'Waiting for investment', sl: 'Čaka na vlaganje' },
+  'live.funding.title': { en: 'Waiting for financing', sl: 'Čaka na financiranje' },
   'live.funding.investors': { en: '{n} active co-creators', sl: '{n} aktivnih ko-kreatorjev' },
   'live.funding.circulation': { en: 'LANA in circulation', sl: 'Znesek LANA v obtoku' },
   'live.funding.distribution': { en: 'Indicative amount for distribution', sl: 'Okvirni znesek za distribucijo' },
@@ -320,8 +322,8 @@ const translations = {
   'learn.back': { en: 'Back to the home page', sl: 'Nazaj na domačo stran' },
   'learn.lana8wonder.title': { en: 'Lana8Wonder', sl: 'Lana8Wonder' },
   'learn.lana8wonder.content': {
-    en: 'By purchasing Lana8Wonder, you become a supporter of the Lana life cycle. The maximum amount an individual can invest in Lana is 100 Euros, and with that they receive a Lana package that is gradually sold into the Economy of Abundance. More about this at Lana8Wonder.com. These Lanas can also be obtained by the user through consumption.',
-    sl: 'Z nakupom Lana8Wonder postanete podpornik življenjskega cikla Lane. Največji znesek, ki ga posameznik lahko vloži v Lano, je 100 evrov; s tem dobi paketek Lan, ki ga sčasoma odprodaja v Ekonomijo Obilja. Več o tem na Lana8Wonder.com. Te Lane lahko uporabnik pridobi tudi s potrošnjo.',
+    en: 'By purchasing Lana8Wonder, you become a supporter of the Lana life cycle. The maximum amount with which an individual can finance Lana is 100 Euros, and with that they receive a Lana package that is gradually sold into the Economy of Abundance. More about this at Lana8Wonder.com. These Lanas can also be obtained by the user through consumption.',
+    sl: 'Z nakupom Lana8Wonder postanete podpornik življenjskega cikla Lane. Največji znesek, s katerim posameznik lahko financira Lano, je 100 evrov; s tem dobi paketek Lan, ki ga sčasoma odprodaja v Ekonomijo Obilja. Več o tem na Lana8Wonder.com. Te Lane lahko uporabnik pridobi tudi s potrošnjo.',
   },
   'learn.crowdfunding.title': { en: 'Crowdfunding', sl: 'Crowdfunding' },
   'learn.crowdfunding.content': {

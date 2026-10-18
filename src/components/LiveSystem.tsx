@@ -132,7 +132,7 @@ export default function LiveSystem() {
                 <>
                   <MetricRow icon={<Landmark className="h-5 w-5" />} label={t("live.split")} value={data?.split != null ? `SPLIT ${data.split}` : "—"} />
                   <MetricRow icon={<Clock className="h-5 w-5" />} label={t("live.days")} value={data?.splitDays ?? "—"} />
-                  <MetricRow icon={<Users className="h-5 w-5" />} label={t("live.providers")} value={data?.providersCount ?? "—"} />
+                  <MetricRow icon={<Users className="h-5 w-5" />} label={t(data?.providersCountScope === "recent" ? "live.providersRecent" : "live.providers")} value={data?.providersCount ?? "—"} />
                 </>
               )}
             </div>

@@ -5,6 +5,7 @@ const WebSocket = require('ws');
 const Database = require('better-sqlite3');
 const fs = require('fs');
 const { simpleUnitKeys, selectStorefronts } = require('./unitOrigin.cjs');
+const { buildRegister } = require('./providerRegister.cjs');
 
 const app = express();
 
@@ -238,17 +239,148 @@ function fetchUnitEvents(unitIds) {
   });
 }
 
-async function lookupSimpleUnits(providers) {
-  const unitIds = [...new Set((providers || []).map(p => normalizeText(p.unit_id)).filter(Boolean))];
-  const { ok, events } = await fetchUnitEvents(unitIds);
+function rememberSimpleUnits(events) {
   for (const key of simpleUnitKeys(events)) {
     if (knownSimpleUnits.has(key)) continue;
     knownSimpleUnits.add(key);
     try { rememberSimpleUnit.run(key); } catch (err) { console.warn('[connects] remember simple unit:', err.message); }
   }
+}
+
+async function lookupSimpleUnits(providers) {
+  const unitIds = [...new Set((providers || []).map(p => normalizeText(p.unit_id)).filter(Boolean))];
+  const { ok, events } = await fetchUnitEvents(unitIds);
+  rememberSimpleUnits(events);
   // No relay answered: keep going with the remembered Simple units rather than emptying the list.
   if (!ok) console.warn('[connects] unit origin: no relay answered, using the remembered Simple units');
   return { checked: ok, keys: knownSimpleUnits };
+}
+
+// ── Provider register: the REAL number of open units (providerRegister.cjs) ──
+// thelana.life/api/providers is only the 60 most recently edited units, so "Skupno ponudnikov"
+// is counted here from every KIND 30901 + 30903 on the relays. Refreshed in the background
+// (stale-while-revalidate); a failed refresh keeps the last good register.
+const REGISTER_TTL_MS = 5 * 60 * 1000;
+const REGISTER_RETRY_MS = 60 * 1000;
+const REGISTER_PAGE_TIMEOUT_MS = 8000;
+const REGISTER_MAX_PAGES = 40;
+const REGISTER_MIN_RELAYS = 2; // fewer complete relays = degraded, keep the last good number
+const REGISTER_COLD_WAIT_MS = 10000;
+const LANACONNECTS_ORIGINS = new Set(['https://lanaconnects.us', 'https://www.lanaconnects.us']);
+const registerCache = { at: 0, data: null, inflight: null, error: null };
+const registerVerified = new Map(); // event id -> signature ok; each event is verified once
+
+function openRelay(url, timeoutMs) {
+  return new Promise((resolve, reject) => {
+    const ws = new WebSocket(url);
+    const t = setTimeout(() => { try { ws.terminate(); } catch {} reject(new Error('connect timeout')); }, timeoutMs);
+    ws.once('open', () => { clearTimeout(t); resolve(ws); });
+    ws.once('error', err => { clearTimeout(t); reject(err); });
+  });
+}
+
+// One REQ. complete = the relay sent EOSE (not a timeout, CLOSED or a dropped socket).
+function relayPage(ws, subId, filter, timeoutMs) {
+  return new Promise(resolve => {
+    const events = [];
+    let done = false;
+    let timer = null;
+    const finish = complete => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      ws.off('message', onMessage);
+      ws.off('close', onClose);
+      try { ws.send(JSON.stringify(['CLOSE', subId])); } catch {}
+      resolve({ events, complete });
+    };
+    const onMessage = data => {
+      let msg;
+      try { msg = JSON.parse(data); } catch { return; }
+      if (msg[1] !== subId) return;
+      if (msg[0] === 'EVENT' && msg[2]) events.push(msg[2]);
+      else if (msg[0] === 'EOSE') finish(true);
+      else if (msg[0] === 'CLOSED') finish(false);
+    };
+    const onClose = () => finish(false);
+    timer = setTimeout(() => finish(false), timeoutMs);
+    ws.on('message', onMessage);
+    ws.on('close', onClose);
+    try { ws.send(JSON.stringify(['REQ', subId, filter])); } catch { finish(false); }
+  });
+}
+
+// Every event of one kind on one relay. A relay answers at most 500 per REQ, so page with
+// `until` = oldest created_at seen (inclusive: same-second events come again and are
+// de-duplicated by id) until a page brings nothing new.
+async function relayAllOfKind(ws, kind) {
+  const byId = new Map();
+  let until;
+  for (let page = 0; page < REGISTER_MAX_PAGES; page++) {
+    const filter = { kinds: [kind], limit: 500 };
+    if (until !== undefined) filter.until = until;
+    const { events, complete } = await relayPage(ws, `reg${kind}p${page}`, filter, REGISTER_PAGE_TIMEOUT_MS);
+    let added = 0;
+    let oldest = Infinity;
+    for (const ev of events) {
+      if (!ev || !ev.id) continue;
+      if (!byId.has(ev.id)) { byId.set(ev.id, ev); added++; }
+      if (ev.created_at < oldest) oldest = ev.created_at;
+    }
+    if (!complete) return { events: [...byId.values()], complete: false };
+    if (added === 0) return { events: [...byId.values()], complete: true };
+    until = oldest;
+  }
+  return { events: [...byId.values()], complete: false }; // page cap hit: not trusted as complete
+}
+
+async function fetchRegisterFromRelay(url) {
+  let ws = null;
+  try {
+    ws = await openRelay(url, REGISTER_PAGE_TIMEOUT_MS);
+    const [units, statuses] = await Promise.all([relayAllOfKind(ws, 30901), relayAllOfKind(ws, 30903)]);
+    // A relay that answers with nothing is a quiet relay, not an empty register.
+    const complete = units.complete && statuses.complete && units.events.length > 0 && statuses.events.length > 0;
+    return { complete, units: units.events, statuses: statuses.events };
+  } catch (err) {
+    return { complete: false, units: [], statuses: [], error: `${url}: ${err.message}` };
+  } finally {
+    try { ws && ws.close(); } catch {}
+  }
+}
+
+async function loadProviderRegister() {
+  const results = await Promise.all(RELAYS.map(fetchRegisterFromRelay));
+  const complete = results.filter(r => r.complete).length;
+  if (complete < REGISTER_MIN_RELAYS) {
+    throw new Error(`only ${complete} of ${RELAYS.length} relays answered completely ${results.map(r => r.error).filter(Boolean).join('; ')}`);
+  }
+  const units = results.flatMap(r => r.units);
+  const statuses = results.flatMap(r => r.statuses);
+  rememberSimpleUnits(units);
+  const register = buildRegister(units, statuses, { simpleKeys: knownSimpleUnits, verified: registerVerified });
+  const current = new Set([...units, ...statuses].map(ev => ev && ev.id));
+  for (const id of registerVerified.keys()) if (!current.has(id)) registerVerified.delete(id);
+  console.log(`[register] network ${register.networkTotal}, Ekonomija Obilja ${register.obiljeTotal} (${complete}/${RELAYS.length} relays)`);
+  return { networkTotal: register.networkTotal, obiljeTotal: register.obiljeTotal, breakdown: register.breakdown, relays: { complete, of: RELAYS.length }, countedAt: Date.now() };
+}
+
+// Last good register right away (refreshing it in the background when older than the TTL).
+// Only before the very first count does a caller wait, and then at most REGISTER_COLD_WAIT_MS.
+function getProviderRegister() {
+  if (Date.now() - registerCache.at >= REGISTER_TTL_MS && !registerCache.inflight) {
+    registerCache.inflight = loadProviderRegister()
+      .then(data => { registerCache.data = data; registerCache.at = Date.now(); registerCache.error = null; return data; })
+      .catch(err => {
+        console.warn('[register]', err.message);
+        registerCache.error = err.message;
+        registerCache.at = Date.now() - REGISTER_TTL_MS + REGISTER_RETRY_MS;
+        return registerCache.data;
+      })
+      .finally(() => { registerCache.inflight = null; });
+  }
+  if (registerCache.data || !registerCache.inflight) return Promise.resolve(registerCache.data);
+  return Promise.race([registerCache.inflight, new Promise(r => setTimeout(() => r(null), REGISTER_COLD_WAIT_MS))]);
 }
 
 // Same status rule as lanaconnects.us: direct-fund deal state wins, then the brain trade status.
@@ -259,7 +391,7 @@ function tradeStatus(trade, deal) {
   return 'pending';
 }
 
-function buildOverview({ dashboard, providers, trades, deals, stats, bef, unitOrigin }) {
+function buildOverview({ dashboard, providers, trades, deals, stats, bef, unitOrigin, register }) {
   const split = dashboard?.split ?? dashboard?.current_split ?? stats?.split ?? null;
   const started = Number(dashboard?.split_started_at || 0);
   const splitDays = started ? Math.max(0, Math.floor((Date.now() / 1000 - started) / 86400)) : null;
@@ -342,7 +474,9 @@ function buildOverview({ dashboard, providers, trades, deals, stats, bef, unitOr
     split,
     splitStartedAt: started || null,
     splitDays,
-    providersCount: providers === null ? null : storefronts.length,
+    // The register count when we have one; otherwise thelana.life's recent list, labelled as such.
+    providersCount: register ? register.obiljeTotal : (providers === null ? null : storefronts.length),
+    providersCountScope: register ? 'register' : (providers === null ? null : 'recent'),
     latestProviders,
     hiddenProviders: providers === null ? null : { ...hidden, unitOriginChecked: Boolean(unitOrigin && unitOrigin.checked) },
     trades: tradeRows,
@@ -355,6 +489,7 @@ function buildOverview({ dashboard, providers, trades, deals, stats, bef, unitOr
 async function loadConnectsOverview() {
   const failed = [];
   const safe = (name, p) => p.catch(err => { console.warn(`[connects] ${name}: ${err.message}`); failed.push(name); return null; });
+  const registerPromise = getProviderRegister();
   const [dashboard, providersData, tradesData, dealsData, stats, bef] = await Promise.all([
     safe('dashboard', fetchJson(`${THELANA_API}/dashboard`)),
     safe('providers', fetchJson(`${THELANA_API}/providers`)),
@@ -369,6 +504,7 @@ async function loadConnectsOverview() {
   if (failed.length && connectsCache.data) throw new Error(`partial outage: ${failed.join(', ')}`);
   const providers = providersData ? (providersData.providers || []) : null;
   const unitOrigin = providers ? await lookupSimpleUnits(providers) : null;
+  const register = await registerPromise;
   const overview = buildOverview({
     dashboard,
     providers,
@@ -377,6 +513,7 @@ async function loadConnectsOverview() {
     stats,
     bef,
     unitOrigin,
+    register,
   });
   if (failed.length) overview.partial = failed; // no snapshot yet: ship nulls, the UI shows dashes
   return overview;
@@ -416,6 +553,26 @@ app.get('/api/connects/overview', async (_req, res) => {
   } catch (err) {
     console.error('[connects] overview failed:', err.message);
     res.status(503).json({ error: 'Live data unavailable' });
+  }
+});
+
+// The register count for lanaconnects.us (whole network, Simple included) and for this page.
+// CORS only for the LanaConnects origins; no other site needs to read it from a browser.
+app.get('/api/connects/providers-total', async (req, res) => {
+  const origin = req.get('origin');
+  res.set('Vary', 'Origin');
+  if (origin && LANACONNECTS_ORIGINS.has(origin)) res.set('Access-Control-Allow-Origin', origin);
+  try {
+    const register = await getProviderRegister();
+    if (!register) {
+      res.set('Cache-Control', 'no-store');
+      return res.status(503).json({ error: 'Provider register not counted yet' });
+    }
+    res.set('Cache-Control', registerCache.error ? 'no-store' : 'public, max-age=60');
+    res.json({ ...register, stale: Boolean(registerCache.error) });
+  } catch (err) {
+    console.error('[register] providers-total failed:', err.message);
+    res.status(503).json({ error: 'Provider register unavailable' });
   }
 });
 
@@ -493,4 +650,5 @@ function queryRelays(kind, timeout = 15000, limit = 5000) {
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  getProviderRegister(); // count the register once at start, so the first visitor gets it
 });
