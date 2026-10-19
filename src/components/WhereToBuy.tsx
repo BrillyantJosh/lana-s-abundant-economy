@@ -33,6 +33,8 @@ export default function WhereToBuy() {
     setDisplayed(pickRandom(languageMerchants, 3));
   }, [languageMerchants]);
 
+  // `comingSoon: true` = the portal is shown dimmed and is NOT a link (too few providers yet).
+  // Flip it back to `false` / remove it in this one place when the portal is ready.
   const portals = [
     { icon: Sprout, label: t("portals.farms"), url: "https://www.lanaeco.farm" },
     { icon: ShoppingBag, label: t("portals.shops"), url: "https://www.lanaeco.shop/" },
@@ -40,10 +42,10 @@ export default function WhereToBuy() {
     { icon: Sparkles, label: t("portals.beauty"), url: "https://lanabeauty.care" },
     { icon: Shirt, label: t("portals.fashion"), url: "https://lana.fashion" },
     { icon: Sofa, label: t("portals.furniture"), url: "https://lana.furniture" },
-    { icon: HardHat, label: t("portals.construction"), url: "https://lana.construction" },
-    { icon: Baby, label: t("portals.kids"), url: "https://lana.kids" },
+    { icon: HardHat, label: t("portals.construction"), url: "https://lana.construction", comingSoon: true },
+    { icon: Baby, label: t("portals.kids"), url: "https://lana.kids", comingSoon: true },
     { icon: PawPrint, label: t("portals.pets"), url: "https://lana.pet" },
-    { icon: Palmtree, label: t("portals.vacations"), url: "https://lana.vacations" },
+    { icon: Palmtree, label: t("portals.vacations"), url: "https://lana.vacations", comingSoon: true },
     { icon: Tent, label: t("portals.marketplace"), url: "https://lanamarket.place" },
     { icon: CalendarDays, label: t("portals.events"), url: "https://lana.events" },
   ];
@@ -132,18 +134,37 @@ export default function WhereToBuy() {
       >
         <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-[0.28em] text-muted-foreground">{t("shops.portals")}</p>
         <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-center sm:gap-2.5">
-          {portals.map(({ icon: Icon, label, url }) => (
-            <a
-              key={url}
-              href={withLang(url, lang)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-jade/30 bg-white/55 px-3 py-2 text-[13px] font-bold text-jade-deep transition-all duration-300 hover:-translate-y-0.5 hover:border-jade hover:bg-jade hover:text-cream sm:px-4"
-            >
-              <Icon className="h-4 w-4 shrink-0" />
-              <span className="truncate">{label}</span>
-            </a>
-          ))}
+          {portals.map(({ icon: Icon, label, url, comingSoon }) =>
+            comingSoon ? (
+              // Not a link on purpose: same pill shape so the grid stays aligned, but dimmed and inert.
+              <span
+                key={url}
+                role="link"
+                aria-disabled="true"
+                data-portal-soon={url}
+                title={t("portals.soonHint")}
+                className="relative inline-flex cursor-default select-none items-center gap-2 rounded-full border border-dashed border-jade/20 bg-white/30 px-3 py-2 text-[13px] font-bold text-jade-deep/45 sm:px-4"
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="truncate">{label}</span>
+                {/* tiny tag on the top-right edge, so the name keeps the same room as in the other pills */}
+                <span className="absolute -top-1.5 right-2.5 rounded-full border border-cream bg-gold-light px-1.5 text-[9px] font-bold uppercase leading-[13px] tracking-[0.14em] text-gold-deep">
+                  {t("portals.soon")}
+                </span>
+              </span>
+            ) : (
+              <a
+                key={url}
+                href={withLang(url, lang)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-jade/30 bg-white/55 px-3 py-2 text-[13px] font-bold text-jade-deep transition-all duration-300 hover:-translate-y-0.5 hover:border-jade hover:bg-jade hover:text-cream sm:px-4"
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="truncate">{label}</span>
+              </a>
+            ),
+          )}
         </div>
       </motion.div>
     </div>

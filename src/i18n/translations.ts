@@ -144,6 +144,9 @@ const translations = {
   'portals.vacations':    { en: 'Lana Vacations',   sl: 'Lana Počitnice' },
   'portals.marketplace':  { en: 'Lana Used Goods Marketplace', sl: 'Lana Tržnica rabljenih izdelkov' },
   'portals.events':       { en: 'Lana Events & Workshops',      sl: 'Lana Dogodki & Delavnice' },
+  // Shown on portals that are not open yet (too few providers) — see `comingSoon` in WhereToBuy.tsx
+  'portals.soon':         { en: 'soon',             sl: 'kmalu' },
+  'portals.soonHint':     { en: 'Coming soon — not enough providers yet', sl: 'Kmalu – še ni dovolj ponudnikov' },
 
   // Events
   'events.title': { en: 'Lana Events', sl: 'Lana Dogodki' },
