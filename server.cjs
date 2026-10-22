@@ -6,6 +6,7 @@ const Database = require('better-sqlite3');
 const fs = require('fs');
 const { simpleUnitKeys, selectStorefronts } = require('./unitOrigin.cjs');
 const { buildRegister } = require('./providerRegister.cjs');
+const { countryCode, groupByCountry } = require('./providerCountry.cjs');
 
 const app = express();
 
@@ -170,6 +171,9 @@ const BEF_API = process.env.BEF_API || 'https://balancedexchangeframe.work/api';
 const SHOP_BASE = 'https://shop.lanapays.us';
 const CONNECTS_TTL_MS = 60 * 1000;
 const LATEST_PROVIDERS = 8; // lanaconnects.us lists 3; this page has room for more
+// Per country for the LanaConnects pages (Slovenian page: Slovenia, English page: UK). They show 5-6;
+// the rest is headroom, so a country does not run dry when a few of its newest units are hidden.
+const LATEST_PROVIDERS_PER_COUNTRY = 10;
 const connectsCache = { at: 0, data: null, inflight: null, stale: false };
 
 async function fetchJson(url, timeoutMs = 8000) {
@@ -401,17 +405,21 @@ function buildOverview({ dashboard, providers, trades, deals, stats, bef, unitOr
   // this page shows Ekonomija Obilja providers only.
   const { storefronts, hidden } = selectStorefronts(providers, unitOrigin && unitOrigin.keys);
   const named = storefronts.filter(p => normalizeText(p.name));
-  const latestProviders = providers === null ? null : named
+  const newestFirst = providers === null ? null : named
     .filter(p => Number(p.registeredAt || 0) > 0)
     .sort((a, b) => (Number(b.registeredAt || 0) - Number(a.registeredAt || 0)) || (Number(b.created_at || 0) - Number(a.created_at || 0)))
-    .slice(0, LATEST_PROVIDERS)
     .map(p => ({
       name: normalizeText(p.name),
       image: absoluteUrl(p.logo || p.image || ''),
       registeredAt: Number(p.registeredAt),
       category: normalizeText(p.category),
-      country: normalizeText(p.country),
+      country: normalizeText(p.country), // as typed by the merchant
+      countryCode: countryCode(p.country), // normalised ISO code, '' when it cannot be told
     }));
+  const latestProviders = newestFirst === null ? null : newestFirst.slice(0, LATEST_PROVIDERS);
+  // The same list per country code (the LanaConnects pages show one country each). Same Simple /
+  // payout-only rule as everywhere above: newestFirst is built from storefronts only.
+  const latestProvidersByCountry = newestFirst === null ? null : groupByCountry(newestFirst, LATEST_PROVIDERS_PER_COUNTRY);
 
   // Trades: direct-fund deals (with status) joined to brain trades by id, then brain-only trades.
   const dealRows = deals || [];
@@ -478,6 +486,7 @@ function buildOverview({ dashboard, providers, trades, deals, stats, bef, unitOr
     providersCount: register ? register.obiljeTotal : (providers === null ? null : storefronts.length),
     providersCountScope: register ? 'register' : (providers === null ? null : 'recent'),
     latestProviders,
+    latestProvidersByCountry,
     hiddenProviders: providers === null ? null : { ...hidden, unitOriginChecked: Boolean(unitOrigin && unitOrigin.checked) },
     trades: tradeRows,
     funding: { waitingEur, byCurrency, investors, lanaInCirculation, distributionEur, rateEur },

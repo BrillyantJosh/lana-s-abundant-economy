@@ -12,7 +12,10 @@ export interface ConnectsProvider {
   image: string;
   registeredAt: number;
   category: string;
+  /** Country as the merchant typed it. */
   country: string;
+  /** Normalised ISO code (SI, GB, ...); "" when the text cannot be told. */
+  countryCode?: string;
 }
 
 export interface ConnectsTrade {
@@ -43,6 +46,8 @@ export interface ConnectsOverview {
   /** 'register' = every open Ekonomija Obilja unit on the relays; 'recent' = thelana.life's recent list only */
   providersCountScope?: "register" | "recent" | null;
   latestProviders: ConnectsProvider[] | null;
+  /** newest first, per normalised country code (SI, GB, ...); used by the LanaConnects pages */
+  latestProvidersByCountry?: Record<string, ConnectsProvider[]> | null;
   trades: ConnectsTrade[] | null;
   funding: ConnectsFunding;
   bef: { version: string; date: string; label: string } | null;
