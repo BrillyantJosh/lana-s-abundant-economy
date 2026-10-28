@@ -43,7 +43,7 @@ export default function WhereToBuy() {
     { icon: Shirt, label: t("portals.fashion"), url: "https://lana.fashion" },
     { icon: Sofa, label: t("portals.furniture"), url: "https://lana.furniture" },
     { icon: HardHat, label: t("portals.construction"), url: "https://lana.construction", comingSoon: true },
-    { icon: Baby, label: t("portals.kids"), url: "https://lana.kids", comingSoon: true },
+    { icon: Baby, label: t("portals.kids"), url: "https://lana.kids" },
     { icon: PawPrint, label: t("portals.pets"), url: "https://lana.pet" },
     { icon: Palmtree, label: t("portals.vacations"), url: "https://lana.vacations", comingSoon: true },
     { icon: Tent, label: t("portals.marketplace"), url: "https://lanamarket.place" },
