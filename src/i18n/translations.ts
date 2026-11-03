@@ -80,8 +80,8 @@ const translations = {
   'pillars.kicker': { en: 'I. Services', sl: 'I. Sklopi' },
   'pillars.title': { en: 'Three doors into the same economy', sl: 'Trije vhodi v isto ekonomijo' },
   'pillars.subtitle': {
-    en: 'Pick the door that fits your business. All three lead into the same flow: the customer pays exactly the invoice, the merchant receives it in full plus a reward on top.',
-    sl: 'Izberi vhod, ki ustreza tvoji dejavnosti. Vsi trije vodijo v isti tok: kupec plača točno toliko, kot piše na računu, trgovec pa prejme celoten račun in nagrado povrhu.',
+    en: 'Pick the door that fits your business. The customer always pays exactly the invoice. At the mobile till and through LanaPay the merchant receives it in full plus a reward on top; through Simple the invoice is paid out minus 2%.',
+    sl: 'Izberi vhod, ki ustreza tvoji dejavnosti. Kupec vedno plača točno toliko, kot piše na računu. Pri mobilni blagajni in prek LanaPay trgovec prejme celoten račun in nagrado povrhu; prek Simple se izplača znesek računa, zmanjšan za 2 %.',
   },
   'pillars.simple.name': { en: 'Simple', sl: 'Simple' },
   'pillars.simple.tag': { en: 'Sell for LANA in two minutes', sl: 'Prodaj za LANO v dveh minutah' },
@@ -90,7 +90,7 @@ const translations = {
     sl: 'Brez gotovine, brez čakanja, brez odobritve. Skeniraš svojo Lana kartico, vpišeš dejavnost in bančni račun – in v dveh minutah že prodajaš. Nakup financirajo kupčevi lastni kovanci, zato samopostrežna registracija ne potrebuje nikogaršnje odobritve.',
   },
   'pillars.simple.b1': { en: 'LANA only — no cash rail', sl: 'Samo LANA – brez gotovinskega tira' },
-  'pillars.simple.b2': { en: 'Merchant reward 2% (5% with Lana8Wonder)', sl: 'Nagrada trgovcu 2 % (5 % z Lana8Wonder)' },
+  'pillars.simple.b2': { en: 'The invoice minus 2% — our only charge', sl: 'Račun, zmanjšan za 2 % — naš edini strošek' },
   'pillars.simple.b3': { en: 'Your key never leaves your device', sl: 'Ključ nikoli ne zapusti tvoje naprave' },
   'pillars.simple.cta': { en: 'Open Simple', sl: 'Odpri Simple' },
   'pillars.mobile.name': { en: 'Economy of Abundance', sl: 'Ekonomija Obilja' },
@@ -271,7 +271,7 @@ const translations = {
     en: 'Any business that wants to start today: scan your card, enter your business and bank details.',
     sl: 'Vsaka dejavnost, ki želi začeti danes: skeniraš kartico, vpišeš dejavnost in bančni račun.',
   },
-  'choose.reg.simple.reward': { en: 'Reward 2–5%', sl: 'Nagrada 2–5 %' },
+  'choose.reg.simple.reward': { en: 'The invoice minus 2%', sl: 'Račun, zmanjšan za 2 %' },
   'choose.reg.simple.payment': { en: 'Payment in LANA only', sl: 'Plačilo samo z LANO' },
 
   'choose.reg.obilje.name': { en: 'Abundance — organic, local, one of a kind', sl: 'Obilje — organsko, lokalno, unikatno' },
