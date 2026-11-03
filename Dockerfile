@@ -1,4 +1,4 @@
-FROM node:20-alpine AS build
+FROM node:24-alpine AS build
 # node:20-alpine ships no prebuilt musl binaries for the native deps
 # (better-sqlite3/sharp), so npm falls back to node-gyp — which needs a
 # toolchain. Latent until a --no-cache rebuild or a base-image bump breaks
@@ -10,7 +10,7 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM node:20-alpine
+FROM node:24-alpine
 RUN apk add --no-cache python3 make g++
 WORKDIR /app
 COPY package.json package-lock.json* ./
