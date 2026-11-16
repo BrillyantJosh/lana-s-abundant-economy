@@ -45,7 +45,7 @@ export default function WhereToBuy() {
     { icon: HardHat, label: t("portals.construction"), url: "https://lana.construction", comingSoon: true },
     { icon: Baby, label: t("portals.kids"), url: "https://lana.kids" },
     { icon: PawPrint, label: t("portals.pets"), url: "https://lana.pet" },
-    { icon: Palmtree, label: t("portals.vacations"), url: "https://lana.vacations", comingSoon: true },
+    { icon: Palmtree, label: t("portals.vacations"), url: "https://lana.vacations" },
     { icon: Tent, label: t("portals.marketplace"), url: "https://lanamarket.place" },
     { icon: CalendarDays, label: t("portals.events"), url: "https://lana.events" },
   ];
