@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Plus, Pencil, Trash2, LogOut, Loader2, Video, X } from 'lucide-react';
-import { wifToNostrHex } from '@/lib/crypto';
+import { wifToNostrKeys } from '@/lib/crypto';
+import { signedFetch, explainRefusal } from '@/lib/nip98Fetch';
 import { useLanguage } from '@/i18n/LanguageContext';
 import lanaLogo from '@/assets/lana-logo.png';
 
@@ -20,9 +21,28 @@ interface Post {
   updated_at: number;
 }
 
+/**
+ * Every admin call is SIGNED with the admin's key (src/lib/nip98Fetch.ts); the
+ * server believes the signature, never a named hex. The key lives in this tab's
+ * memory only — nothing is stored — so a reload or Logout means logging in again.
+ */
+interface AdminSession {
+  hex: string;
+  privateKeyHex: string;
+}
+
+async function readJson(res: Response): Promise<{ code?: string; reason?: string; error?: string; hex?: string } | null> {
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
 const Admin = () => {
   const { t } = useLanguage();
-  const [hexId, setHexId] = useState<string | null>(null);
+  const [session, setSession] = useState<AdminSession | null>(null);
+  const hexId = session?.hex ?? null;
   const [wif, setWif] = useState('');
   const [loginError, setLoginError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -39,16 +59,12 @@ const Admin = () => {
   const [formTypes, setFormTypes] = useState<string[]>([]);
   const [formLang, setFormLang] = useState<'en' | 'sl'>('en');
   const [isSaving, setIsSaving] = useState(false);
+  const [actionError, setActionError] = useState('');
 
-  // Restore session
+  // Before 21 Nov 2026 the page kept the admin's hex in localStorage and the
+  // server believed it. Nothing is kept now; clear what an old visit left.
   useEffect(() => {
-    const saved = localStorage.getItem('admin_hex');
-    if (saved) {
-      fetch(`/api/auth/verify/${saved}`).then(r => r.json()).then(data => {
-        if (data.authorized) setHexId(saved);
-        else localStorage.removeItem('admin_hex');
-      });
-    }
+    try { localStorage.removeItem('admin_hex'); } catch { /* storage blocked */ }
   }, []);
 
   const fetchPosts = useCallback(async () => {
@@ -70,15 +86,16 @@ const Admin = () => {
     setLoginError('');
     setIsLoggingIn(true);
     try {
-      const hex = await wifToNostrHex(wif.trim());
-      const res = await fetch(`/api/auth/verify/${hex}`);
-      const data = await res.json();
-      if (!data.authorized) {
-        setLoginError('Access denied. You are not an authorized admin.');
+      const keys = await wifToNostrKeys(wif.trim());
+      // Logging in = signing one request; 200 proves this key is on the roster.
+      const res = await signedFetch('/api/admin/whoami', { method: 'GET' }, keys.privateKeyHex);
+      const data = await readJson(res);
+      if (!res.ok || data?.hex !== keys.hex) {
+        setLoginError(explainRefusal(data));
         return;
       }
-      localStorage.setItem('admin_hex', hex);
-      setHexId(hex);
+      setWif('');
+      setSession({ hex: keys.hex, privateKeyHex: keys.privateKeyHex });
     } catch (err) {
       setLoginError(err instanceof Error ? err.message : 'Invalid WIF key');
     } finally {
@@ -87,9 +104,9 @@ const Admin = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('admin_hex');
-    setHexId(null);
+    setSession(null);
     setPosts([]);
+    setActionError('');
   };
 
   const resetForm = () => {
@@ -114,30 +131,47 @@ const Admin = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!hexId) return;
+    if (!session) return;
     setIsSaving(true);
+    setActionError('');
     try {
       const payload = { title: formTitle, body: formBody, youtube_url: formYoutube, types: formTypes, language: formLang };
       const url = editingId ? `/api/admin/posts/${editingId}` : '/api/admin/posts';
       const method = editingId ? 'PUT' : 'POST';
-      await fetch(url, {
+      const res = await signedFetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json', 'x-admin-hex': hexId },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-      });
+      }, session.privateKeyHex);
+      if (!res.ok) {
+        // Keep the form as it is, so nothing typed is lost.
+        const data = await readJson(res);
+        setActionError(data?.code ? explainRefusal(data) : (data?.error || `Saving failed (${res.status}).`));
+        return;
+      }
       resetForm();
       fetchPosts();
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Saving failed.');
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!hexId || !confirm('Are you sure you want to delete this post?')) return;
-    await fetch(`/api/admin/posts/${id}`, {
-      method: 'DELETE',
-      headers: { 'x-admin-hex': hexId },
-    });
+    if (!session || !confirm('Are you sure you want to delete this post?')) return;
+    setActionError('');
+    try {
+      const res = await signedFetch(`/api/admin/posts/${id}`, { method: 'DELETE' }, session.privateKeyHex);
+      if (!res.ok) {
+        const data = await readJson(res);
+        setActionError(data?.code ? explainRefusal(data) : (data?.error || `Deleting failed (${res.status}).`));
+        return;
+      }
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Deleting failed.');
+      return;
+    }
     fetchPosts();
   };
 
@@ -218,6 +252,12 @@ const Admin = () => {
             </button>
           )}
         </div>
+
+        {actionError && (
+          <p role="alert" className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2">
+            {actionError}
+          </p>
+        )}
 
         {/* Post Form */}
         {showForm && (

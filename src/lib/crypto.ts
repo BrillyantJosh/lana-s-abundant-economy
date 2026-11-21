@@ -65,3 +65,9 @@ export async function wifToNostrHex(wif: string): Promise<string> {
   const { privateKeyHex } = await wifToPrivateKey(wif);
   return deriveNostrPublicKey(privateKeyHex);
 }
+
+/** The private key (to sign with) and the Nostr HEX id of a WIF. */
+export async function wifToNostrKeys(wif: string): Promise<{ privateKeyHex: string; hex: string }> {
+  const { privateKeyHex } = await wifToPrivateKey(wif);
+  return { privateKeyHex, hex: deriveNostrPublicKey(privateKeyHex) };
+}

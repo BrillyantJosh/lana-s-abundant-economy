@@ -7,6 +7,8 @@ const fs = require('fs');
 const { simpleUnitKeys, selectStorefronts } = require('./unitOrigin.cjs');
 const { buildRegister } = require('./providerRegister.cjs');
 const { countryCode, groupByCountry } = require('./providerCountry.cjs');
+const { keepRawBody } = require('./nip98Auth.cjs');
+const { makeRequireAdmin } = require('./adminAuth.cjs');
 
 const app = express();
 
@@ -17,7 +19,8 @@ const app = express();
 app.use(compression());
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
+// keepRawBody: the admin signature covers the exact body bytes (nip98Auth.cjs).
+app.use(express.json({ verify: keepRawBody }));
 
 // The four relays of KIND 38888 (d=main). relay.lanacoin-eternity.com was an old alias of
 // relay.lana-eternity.com and is not in 38888.
@@ -66,14 +69,11 @@ const insertAdmin = db.prepare('INSERT OR IGNORE INTO admin_users (hex_id) VALUE
 for (const hex of SEED_ADMINS) insertAdmin.run(hex);
 
 // ── Auth middleware ──
-function requireAdmin(req, res, next) {
-  const hexId = req.headers['x-admin-hex'];
-  if (!hexId) return res.status(401).json({ error: 'Not authenticated' });
-  const row = db.prepare('SELECT hex_id FROM admin_users WHERE hex_id = ?').get(hexId);
-  if (!row) return res.status(403).json({ error: 'Access denied' });
-  req.adminHex = hexId;
-  next();
-}
+// Every admin request is SIGNED (NIP-98) by a key on the roster; the signer is
+// the only identity. Until 21 Nov 2026 this gate believed an `x-admin-hex`
+// header naming a public key — anybody could send an admin's hex. See adminAuth.cjs.
+const selectAdmin = db.prepare('SELECT hex_id FROM admin_users WHERE hex_id = ?');
+const requireAdmin = makeRequireAdmin((hex) => !!selectAdmin.get(hex));
 
 // ── Static files ──
 app.use(express.static(path.join(__dirname, 'dist'), {
@@ -87,9 +87,11 @@ app.use(express.static(path.join(__dirname, 'dist'), {
 }));
 
 // ── Auth endpoint ──
-app.get('/api/auth/verify/:hexId', (req, res) => {
-  const row = db.prepare('SELECT hex_id FROM admin_users WHERE hex_id = ?').get(req.params.hexId);
-  res.json({ authorized: !!row });
+// The admin page signs in by signing this request: 200 proves the browser holds
+// a roster key (and that its clock is within a minute). Replaces the unsigned
+// /api/auth/verify/:hexId, which only said whether a named hex was on the roster.
+app.get('/api/admin/whoami', requireAdmin, (req, res) => {
+  res.json({ hex: req.adminHex });
 });
 
 // ── Posts API (public) ──
